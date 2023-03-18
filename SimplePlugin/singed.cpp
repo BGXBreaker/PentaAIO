@@ -89,6 +89,18 @@ namespace singed
     void e_logic();
     void r_logic();
 
+    bool should_block_e_when_w()
+    {
+        // spell block
+        auto target = target_selector->get_target(e->range(), damage_type::magical);
+        //no to e target out of w
+        if (target->has_buff(buff_hash("SingedW")))//buff name shoulf be incorrect
+        {
+            return true;
+        }
+        return false;
+    }
+
     hit_chance get_hitchance(TreeEntry* entry);
 
     void load()
@@ -405,18 +417,10 @@ namespace singed
                 }
             }
         }
+
     }
-    bool should_block_e_when_w()
-    {
-        // spell block
-        auto target = target_selector->get_target(e->range(), damage_type::magical);
-        //no to e target out of w
-        if (target->has_buff(buff_hash("SingedW")))//buff name shoulf be incorrect
-        {
-            return true;
-        }
-        return false;
-    }
+
+
 
 #pragma region e_logic
 
