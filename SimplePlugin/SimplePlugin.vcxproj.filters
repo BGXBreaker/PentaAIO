@@ -19,6 +19,12 @@
     <ClCompile Include="..\plugin_sdk\clipper.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="singed.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -29,6 +35,12 @@
     </ClInclude>
     <ClInclude Include="..\plugin_sdk\clipper.h">
       <Filter>plugin_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="singed.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
