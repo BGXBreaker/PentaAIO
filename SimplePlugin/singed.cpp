@@ -379,8 +379,6 @@ namespace singed
     }
 #pragma endregion
 
-#pragma region w_logic
-
     void w_logic()
     {
         if (combo::use_w->get_bool())
@@ -396,6 +394,10 @@ namespace singed
                         {
                             if (w->cast(pred.get_cast_position()))
                             {
+                                if (e->is_ready() && !should_block_e_when_w())
+                                {
+                                    e->cast(enemy);
+                                }
                                 return;
                             }
                         }
@@ -404,8 +406,17 @@ namespace singed
             }
         }
     }
-
-#pragma endregion
+    bool should_block_e_when_w()
+    {
+        // spell block
+        auto target = target_selector->get_target(e->range(), damage_type::magical);
+        //no to e target out of w
+        if (target->has_buff(buff_hash("SingedW")))//buff name shoulf be incorrect
+        {
+            return true;
+        }
+        return false;
+    }
 
 #pragma region e_logic
 
