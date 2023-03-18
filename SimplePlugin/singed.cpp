@@ -203,7 +203,7 @@ namespace singed
         antigapcloser::add_event_handler(on_gapcloser);
 
         event_handler<events::on_update>::add_callback(on_update);
-        event_handler<events::on_draw>::add_callback(on_draw);
+        event_handler<events::on_env_draw>::add_callback(on_draw);
     }
 
     void unload()
@@ -218,7 +218,7 @@ namespace singed
         antigapcloser::remove_event_handler(on_gapcloser);
 
         event_handler<events::on_update>::remove_handler(on_update);
-        event_handler<events::on_draw>::remove_handler(on_draw);
+        event_handler<events::on_env_draw>::remove_handler(on_draw);
     }
     void on_update()
     {
