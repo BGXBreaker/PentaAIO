@@ -89,18 +89,6 @@ namespace singed
     void e_logic();
     void r_logic();
 
-    bool should_block_e_when_w()
-    {
-        // spell block
-        auto target = target_selector->get_target(e->range(), damage_type::magical);
-        //no to e target out of w
-        if (target->has_buff(buff_hash("SingedW")))//buff name shoulf be incorrect
-        {
-            return true;
-        }
-        return false;
-    }
-
     hit_chance get_hitchance(TreeEntry* entry);
 
     void load()
@@ -199,9 +187,6 @@ namespace singed
         auto draw_settings = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings Settings");
         {
             float color[] = { 0.0f, 1.0f, 1.0f, 1.0f };
-            draw_settings::draw_range_q = draw_settings->add_checkbox(myhero->get_model() + ".draw.q", "Draw Q range", true);
-            draw_settings::draw_range_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-            draw_settings::q_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.q.color", "Q Color", color);
             draw_settings::draw_range_w = draw_settings->add_checkbox(myhero->get_model() + ".draw.w", "Draw W range", true);
             draw_settings::draw_range_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
             draw_settings::w_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.w.color", "W Color", color);
@@ -406,10 +391,6 @@ namespace singed
                         {
                             if (w->cast(pred.get_cast_position()))
                             {
-                                if (e->is_ready() && !should_block_e_when_w())
-                                {
-                                    e->cast(enemy);
-                                }
                                 return;
                             }
                         }
@@ -430,12 +411,16 @@ namespace singed
         {
             for (auto& enemy : entitylist->get_enemy_heroes())
             {
-                if (enemy->is_valid_target(e->range()) && !enemy->is_dead())
+                if (enemy->is_valid_target(e->range()) && !enemy->is_dead()&& !enemy->has_buff(buff_hash("SingedW")))
                 {
                     if (enemy->get_distance(myhero->get_position()) <= e->range())
                     {
                         e->cast(enemy);
                     }
+                }
+                if (e->get_damage(enemy) >= enemy->get_health())
+                {
+                    e->cast(enemy);
                 }
             }
         }
@@ -472,8 +457,6 @@ void r_logic()
         }
     }
 }
-#pragma endregion
-
 #pragma endregion
 
 #pragma region get_hitchance
@@ -519,9 +502,6 @@ void r_logic()
 
         if (e->is_ready())
             damage += e->get_damage(target);
-
-        if (r->is_ready())
-            damage += r->get_damage(target);
 
         damage += myhero->get_auto_attack_damage(target);
         return damage;
