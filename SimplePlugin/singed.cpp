@@ -360,6 +360,7 @@ namespace singed
                 {
                     if (q->toogle_state() == 1)
                     {
+                        orbwalker->set_attack(false);
                         q->cast();
                     }
                 }
@@ -367,6 +368,7 @@ namespace singed
                 {
                     if (q->toogle_state() == 2)
                     {
+                        orbwalker->set_attack(true);
                         q->cast();
                     }
                 }
