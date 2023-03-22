@@ -163,6 +163,7 @@
     <ClCompile Include="..\plugin_sdk\clipper.cpp" />
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="milio.cpp" />
     <ClCompile Include="singed.cpp" />
     <ClCompile Include="SpellDB.cpp" />
     <ClCompile Include="utils.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
+    <ClInclude Include="milio.h" />
     <ClInclude Include="singed.h" />
     <ClInclude Include="SpellDB.h" />
     <ClInclude Include="utils.h" />

@@ -614,7 +614,7 @@ namespace Database
     {
         if (!tab) // To prevent crashes in case of bad usage!
         {
-            console->print_error("[BlahajDB] - Error Code: DB-IM1");
+            console->print_error("Error Code: DB-IM1");
             return;
         }
 
@@ -796,16 +796,13 @@ namespace Database
                 break;
             }
         }
-
-        tab->add_separator("databaseInfo", "- Database made by Omori! <3 -");
-        tab->add_separator("databaseVersion", "Version: " + DBVersion);
     }
 
     void InitializeBuffMenu(TreeTab* tab)
     {
         if (!tab) // To prevent crashes in case of bad usage!
         {
-            console->print_error("[BlahajDB] - Error Code: DB-IM2");
+            console->print_error(" Error Code: DB-IM2");
             return;
         }
 
@@ -890,11 +887,6 @@ namespace Database
                 break;
             }
         }
-
-
-
-        tab->add_separator("databaseInfo", "- Database made by Omori! <3 -");
-        tab->add_separator("databaseVersion", "Version: " + DBVersion);
     }
 
     bool canOnAllyBuff(uint32_t buffHash)
