@@ -108,48 +108,23 @@ namespace leesin
     bool q_active = myhero->has_buff(buff_hash("blindmonkqmanager"));
     bool w_active = myhero->has_buff(buff_hash("blindmonkwmanager"));
     bool e_active = myhero->has_buff(buff_hash("blindmonkemanager"));
+    float calculate_q1_damage(game_object_script target);
+    float calculate_q2_damage(game_object_script target);
+    float calculate_e_damage(game_object_script target);
+    float calculate_r_damage(game_object_script target);
 
-    float lee_sin_bonus_ad = (myhero->get_total_attack_damage() - myhero->get_baseDamage());
-    float missing_health_percentage(float current_health, float max_health)
-    {
-        return ((max_health - current_health) / max_health) * 100.0f;
-    }
-    float calculate_q1_damage(float lee_sin_bonus_ad)
-    {
-        float base_damage[] = { 55.0f, 80.0f, 105.0f, 130.0f, 155.0f };
-        float bonus_ad_ratio = 1.1f;
+    std::vector<float> q1_damages = { 55,80,105,130,155 };
+    float q1_coef = 1.1;
 
-        float q1_damage = base_damage[q->level() - 1] + bonus_ad_ratio * lee_sin_bonus_ad;
+    std::vector<float> q2_damages = { 110,160,210,260,310 };
+    float q2_coef = 2.2;
 
-        return q1_damage;
-    }
+    std::vector<float> e_damages = { 35,65,95,125,155 };
+    float e_coef = 1.0;
 
-    float calculate_q2_damage(float target_missing_health, float lee_sin_bonus_ad)
-    {
-        float base_damage[] = { 110.0f, 160.0f, 210.0f, 260.0f, 310.0f };
-        float bonus_ad_ratio = 2.2f;
-        float missing_health_ratio = target_missing_health / 100.0f;
+    std::vector<float> r_damages = { 175,400,625 };
+    float r_coef = 2.0;
 
-        float q2_damage = base_damage[q->level() - 1] + bonus_ad_ratio * lee_sin_bonus_ad;
-        q2_damage += missing_health_ratio * q2_damage;
-
-        return q2_damage;
-    }
-    float calculate_e_damage(float lee_sin_bonus_ad)
-    {
-        float base_damage[] = { 35.0f, 65.0f, 95.0f, 125.0f, 155.0f };
-        float e_damage = base_damage[e->level() - 1] + (lee_sin_bonus_ad * 1.0);
-
-        return e_damage;
-    }
-    float calculate_r_damage(float lee_sin_bonus_ad)
-    {
-        float base_damage[] = { 175.0f, 400.0f, 625.0f };
-        float bonus_ad_ratio = 2.0f;
-        float r_damage = base_damage[r->level() - 1] + (bonus_ad_ratio * lee_sin_bonus_ad);
-
-        return r_damage;
-    }
 
     void load()
     {
@@ -174,69 +149,9 @@ namespace leesin
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
             main_tab->add_separator(myhero->get_model() + "", "PentaAIO : " + myhero->get_model());
-
-            auto combo = main_tab->add_tab(myhero->get_model() + "", "Combo Settings");
-            {
-                combo::use_q = combo->add_checkbox(myhero->get_model() + "", "Use Q", true);
-                combo::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-                combo::use_q2 = combo->add_checkbox(myhero->get_model() + "", "Use Q2", true);
-                auto q_config = combo->add_tab(myhero->get_model() + ".combo.q.config", "Q Config");
-                {
-                    combo::q2_if_target_is_under_turret = q_config->add_hotkey(myhero->get_model() + "", "Use Q2 if target is under turret", TreeHotkeyMode::Toggle, 'A', false);
-                }
-                combo::use_w = combo->add_checkbox(myhero->get_model() + "", "Use W", true);
-                combo::use_w2 = combo->add_checkbox(myhero->get_model() + "", "Use W2", true);
-                combo::use_e = combo->add_checkbox(myhero->get_model() + "", "Use E", true);
-                combo::use_e2 = combo->add_checkbox(myhero->get_model() + "", "Use E2", true);
-                combo::use_r = combo->add_checkbox(myhero->get_model() + "", "Use R", true);
-            }
-            auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Harass Settings");
-            {
-                harass::use_q = harass->add_checkbox(myhero->get_model() + "", "Use Q", true);
-                harass::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-                harass::use_q2 = harass->add_checkbox(myhero->get_model() + "", "Use Q2", false);
-                harass::use_e = harass->add_checkbox(myhero->get_model() + "", "Use E", true);
-                harass::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-                harass::use_e2 = harass->add_checkbox(myhero->get_model() + "", "Use E2", true);
-            }
-            auto laneclear = main_tab->add_tab(myhero->get_model() + "", "Lane Clear Settings");
-            {
-                laneclear::use_q = laneclear->add_checkbox(myhero->get_model() + "", "Use Q", true);
-                laneclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-                laneclear::use_q2 = laneclear->add_checkbox(myhero->get_model() + "", "Use Q2", false);
-                laneclear::use_e = laneclear->add_checkbox(myhero->get_model() + "", "Use E", true);
-                laneclear::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-                auto e_config = laneclear->add_tab(myhero->get_model() + "", "E Config");
-                {
-                    laneclear::e_use_if_hit_minions = e_config->add_slider(myhero->get_model() + "", "if E hit more than", 3, 1, 6);
-                }
-                laneclear::use_e2 = laneclear->add_checkbox(myhero->get_model() + "", "Use E2", true);
-            }
-            auto jungleclear = main_tab->add_tab(myhero->get_model() + "", "jungleclear Settings");
-            {
-                jungleclear::use_q = jungleclear->add_checkbox(myhero->get_model() + "", "Use Q", true);
-                jungleclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-                jungleclear::use_q2 = jungleclear->add_checkbox(myhero->get_model() + "", "Use Q2", true);
-                jungleclear::use_w = jungleclear->add_checkbox(myhero->get_model() + "", "Use W", true);
-                jungleclear::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-                jungleclear::use_w2 = jungleclear->add_checkbox(myhero->get_model() + "", "Use W2", true);
-                jungleclear::use_e = jungleclear->add_checkbox(myhero->get_model() + "", "Use E", true);
-                jungleclear::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-                jungleclear::use_e2 = jungleclear->add_checkbox(myhero->get_model() + "", "Use E2", true);
-            }
             auto hitchance = main_tab->add_tab(myhero->get_model() + "", "Hitchance Settings");
             {
                 hitchance::q_hitchance = hitchance->add_combobox(myhero->get_model() + "", "Hitchance Q", { {"Low",nullptr},{"Medium",nullptr },{"High", nullptr},{"Very High",nullptr} }, 2);
-            }
-            auto insec = main_tab->add_tab(myhero->get_model() + "", "Insec Settings");
-            {
-                insec::wait_q = insec->add_checkbox(myhero->get_model() + "", "Wait for Q", true);
-                insec::q_other = insec->add_checkbox(myhero->get_model() + "", "Q other", true);
-                insec::use_flash = insec->add_checkbox(myhero->get_model() + "", "Use flash", true);
-                if (myhero->get_spell(spellslot::summoner1)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
-                    insec::use_flash->set_texture(myhero->get_spell(spellslot::summoner1)->get_icon_texture());
-                else if (myhero->get_spell(spellslot::summoner2)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
-                    insec::use_flash->set_texture(myhero->get_spell(spellslot::summoner2)->get_icon_texture());
             }
             auto draw_settings = main_tab->add_tab(myhero->get_model() + ".drawings", "Drawings Settings");
             {
@@ -545,15 +460,14 @@ namespace leesin
             {
                 if (combo::use_r->get_bool())
                 {
-                    float lee_sin_bonus_ad = (myhero->get_total_attack_damage() - myhero->get_baseDamage());
-                    if (calculate_r_damage(lee_sin_bonus_ad) >= target->get_health())
+                    if (calculate_r_damage(target) >= target->get_real_health())
                     {
                         r->cast(target);
                     }
                 }
             }
         }
-    #pragma endregion*/
+    #pragma endregion
 
 #pragma region get_hitchance
     hit_chance get_hitchance(TreeEntry* entry)
@@ -591,6 +505,41 @@ namespace leesin
         }
     }
 #pragma endregion
+
+    float calculate_q1_damage(game_object_script target)
+    {
+
+        float q1_raw_damage = q1_damages[q->level() - 1] + q1_coef * myhero->get_additional_attack_damage();
+        float q1_calculate_damage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::physical, q1_raw_damage);
+
+        return q1_calculate_damage;
+    }
+
+    float calculate_q2_damage(game_object_script target)
+    {
+        float q2_damage = q2_damages[q->level() - 1] + q2_coef * myhero->get_additional_attack_damage();
+        float missing_hp_perc = 100 - target->get_health_percent();
+        q2_damage += missing_hp_perc * q2_damage;
+        float q2_calculate_damage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::physical, q2_damage);
+
+        return q2_calculate_damage;
+    }
+
+    float calculate_e_damage(game_object_script target)
+    {
+        float e_damage = e_damages[e->level() - 1] + (myhero->get_additional_attack_damage() * 1.0);
+        float e_calculate_damage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, e_damage);
+
+        return e_calculate_damage;
+    }
+    float calculate_r_damage(game_object_script target)
+    {
+        float r_damage = r_damages[r->level() - 1] + (r_coef* myhero->get_total_attack_damage());
+        float r_calculate_damage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::physical, r_damage);
+
+        return r_calculate_damage;
+    }
+
     void on_draw()
     {
         if (myhero->is_dead())
@@ -616,21 +565,20 @@ namespace leesin
                 if (enemy->is_valid() && !enemy->is_dead() && enemy->is_hpbar_recently_rendered())
                 {
                     float damage = 0.0f;
-                    float missing_health_percent = missing_health_percentage(enemy->get_health(), enemy->get_max_health());
 
                     if (q->is_ready() && draw_settings::draw_damage_settings::q_damage->get_bool())
                     {
                         if (myhero->get_spell(spellslot::q)->get_name() == "BlindMonkQOne")
-                            damage += calculate_q2_damage(missing_health_percent, lee_sin_bonus_ad);
+                            damage += calculate_q2_damage(enemy);
                         else
-                            damage += calculate_q1_damage(lee_sin_bonus_ad);
+                            damage += calculate_q1_damage(enemy);
                     }
 
                     if (e->is_ready() && draw_settings::draw_damage_settings::e_damage->get_bool())
-                        damage += calculate_e_damage(lee_sin_bonus_ad);
+                        damage += calculate_e_damage(enemy);
 
                     if (r->is_ready() && draw_settings::draw_damage_settings::r_damage->get_bool())
-                        damage += calculate_r_damage(lee_sin_bonus_ad);
+                        damage += calculate_r_damage(enemy);
 
                     if (damage != 0.0f)
                         utils::draw_dmg_rl(enemy, damage, 0x8000ff00);
