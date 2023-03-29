@@ -31,6 +31,12 @@
     <ClCompile Include="milio.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="permashow.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="leesin.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -52,6 +58,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="milio.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="permashow.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="leesin.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

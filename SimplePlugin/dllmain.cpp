@@ -1,10 +1,12 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 
 PLUGIN_NAME("PentaAIO");
-SUPPORTED_CHAMPIONS(champion_id::Singed);
+SUPPORTED_CHAMPIONS(champion_id::Singed ,champion_id::LeeSin );
 PLUGIN_TYPE(plugin_type::champion);
 
 #include "singed.h"
+#include"leesin.h"
+
 
 PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
 {
@@ -14,6 +16,9 @@ PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
     {
     case champion_id::Singed:
         singed::load();
+        break;
+    case champion_id::LeeSin:
+        leesin::load();
         break;
     default:
         break;
@@ -32,6 +37,9 @@ PLUGIN_API void on_sdk_unload()
     {
     case champion_id::Singed:
         singed::unload();
+        break;
+    case champion_id::LeeSin:
+        leesin::unload();
         break;
     default:
         break;
