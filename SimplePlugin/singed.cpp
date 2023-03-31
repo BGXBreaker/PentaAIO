@@ -1,6 +1,7 @@
 #include "singed.h"
 #include "../plugin_sdk/plugin_sdk.hpp"
 #include "utils.h"
+#include "permashow.hpp"
 
 namespace singed
 {
@@ -93,7 +94,7 @@ namespace singed
 
     void load()
     {
-        q = plugin_sdk->register_spell(spellslot::q, myhero->get_attack_range() + 25);
+        q = plugin_sdk->register_spell(spellslot::q, myhero->get_attack_range() + 50);
         w = plugin_sdk->register_spell(spellslot::w, 1000);
         w->set_skillshot(0.25f, 265.0f, FLT_MAX, { }, skillshot_type::skillshot_circle);
         e = plugin_sdk->register_spell(spellslot::e, 135);
@@ -101,108 +102,109 @@ namespace singed
 
         main_tab = menu->create_tab("singed", "Singed");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
-
-        main_tab->add_separator(myhero->get_model() + ".aio", "PentaAIO : " + myhero->get_model());
-
-        auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo Settings");
         {
-            combo->add_separator("Combo Q", " Q Settings ");
+            main_tab->add_separator(myhero->get_model() + ".aio", "PentaAIO : " + myhero->get_model());
 
-            combo::use_q = combo->add_checkbox(myhero->get_model() + ".combo.q", "Use Q", true);
-            combo::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-
-            combo->add_separator("Combo W", " W Settings ");
-
-            combo::use_w = combo->add_checkbox(myhero->get_model() + ".combo.w.use_w", "Use W", true);
-            combo::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-
-            combo->add_separator("Combo E", " E Settings ");
-
-            combo::use_e = combo->add_checkbox(myhero->get_model() + ".combo.w.use_e", "Use E", true);
-            combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-
-            combo->add_separator("Combo R", " R Settings ");
-
-            combo::use_r = combo->add_checkbox(myhero->get_model() + ".combo.r", "Use R", true);
-            combo::use_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
-
-            auto r_config = combo->add_tab(myhero->get_model() + ".combo.r.config", "R Config");
+            auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo Settings");
             {
-                r_config->add_separator(myhero->get_model() + ".combo.r.separator1", "R on Low HP Settings");
+                combo->add_separator("Combo Q", " Q Settings ");
 
-                combo::r_use_on_low_hp = r_config->add_checkbox(myhero->get_model() + ".combo.r.use_on_low_hp", "Use R on Low HP", true);
-                combo::r_use_on_low_hp->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
-                combo::r_myhero_hp_under = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under", "Myhero HP is under (in %)", 35, 0, 100);
-                combo::r_only_when_enemies_nearby = r_config->add_checkbox(myhero->get_model() + ".combo.r.only_when_enemies_nearby", "Only when enemies are nearby", true);
-                combo::r_hp_enemies_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.hp_enemies_search_radius", "Enemies nearby search radius", 350, 150, 1600);
-                combo::r_calculate_incoming_damage = r_config->add_checkbox(myhero->get_model() + ".combo.r.calculate_incoming_damage", "Calculate incoming damage", true);
-                combo::r_coming_damage_time = r_config->add_slider(myhero->get_model() + ".combo.r.coming_damage_time", "Set coming damage time (in ms)", 750, 0, 1000);
+                combo::use_q = combo->add_checkbox(myhero->get_model() + ".combo.q", "Use Q", true);
+                combo::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 
-                r_config->add_separator(myhero->get_model() + ".combo.r.separator2", "R if enemies nearby Settings");
+                combo->add_separator("Combo W", " W Settings ");
 
-                combo::r_use_if_x_enemies_nearby = r_config->add_checkbox(myhero->get_model() + ".combo.r.use_if_x_enemies_nearby", "Use R if enemies nearby", true);
-                combo::r_use_if_x_enemies_nearby->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
-                combo::r_enemies_nearby_minimum = r_config->add_slider(myhero->get_model() + ".combo.r.enemies_nearby_minimum", "Minimum enemies nearby", 2, 1, 5);
-                combo::r_enemies_nearby_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under_enemies_search_radius", "Enemies nearby search radius", 250, 150, 1600);
+                combo::use_w = combo->add_checkbox(myhero->get_model() + ".combo.w.use_w", "Use W", true);
+                combo::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+
+                combo->add_separator("Combo E", " E Settings ");
+
+                combo::use_e = combo->add_checkbox(myhero->get_model() + ".combo.w.use_e", "Use E", true);
+                combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+
+                combo->add_separator("Combo R", " R Settings ");
+
+                combo::use_r = combo->add_checkbox(myhero->get_model() + ".combo.r", "Use R", true);
+                combo::use_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+
+                auto r_config = combo->add_tab(myhero->get_model() + ".combo.r.config", "R Config");
+                {
+                    r_config->add_separator(myhero->get_model() + ".combo.r.separator1", "R on Low HP");
+
+                    combo::r_use_on_low_hp = r_config->add_checkbox(myhero->get_model() + ".combo.r.use_on_low_hp", "Use R on Low HP", true);
+                    combo::r_use_on_low_hp->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+                    combo::r_myhero_hp_under = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under", "Myhero HP is under (in %)", 35, 0, 100);
+                    combo::r_only_when_enemies_nearby = r_config->add_checkbox(myhero->get_model() + ".combo.r.only_when_enemies_nearby", "Only when enemies are nearby", true);
+                    combo::r_hp_enemies_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.hp_enemies_search_radius", "Enemies nearby search radius", 350, 150, 1600);
+                    combo::r_calculate_incoming_damage = r_config->add_checkbox(myhero->get_model() + ".combo.r.calculate_incoming_damage", "Calculate incoming damage", true);
+                    combo::r_coming_damage_time = r_config->add_slider(myhero->get_model() + ".combo.r.coming_damage_time", "Set coming damage time (in ms)", 750, 0, 1000);
+
+                    r_config->add_separator(myhero->get_model() + ".combo.r.separator2", "enemies R range check");
+
+                    combo::r_use_if_x_enemies_nearby = r_config->add_checkbox(myhero->get_model() + ".combo.r.use_if_x_enemies_nearby", "Use R if enemies nearby", true);
+                    combo::r_use_if_x_enemies_nearby->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+                    combo::r_enemies_nearby_minimum = r_config->add_slider(myhero->get_model() + ".combo.r.enemies_nearby_minimum", "Minimum enemies nearby", 2, 1, 5);
+                    combo::r_enemies_nearby_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under_enemies_search_radius", "Enemies nearby search radius", 250, 150, 1600);
+                }
             }
-        }
 
-        auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Harass Settings");
+            auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Harass Settings");
+            {
+                harass::use_q = harass->add_checkbox(myhero->get_model() + ".harass.q", "Use Q", true);
+                harass::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                harass::use_w = harass->add_checkbox(myhero->get_model() + ".harass.w", "Use W", true);
+                harass::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+                harass::use_e = harass->add_checkbox(myhero->get_model() + ".harass.e", "Use E", true);
+                harass::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+            }
+
+            auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Lane Clear Settings");
+            {
+                laneclear::spell_farm = laneclear->add_hotkey(myhero->get_model() + ".laneclear.enabled", "Toggle Spell Farm", TreeHotkeyMode::Toggle, 0x04, true);
+                laneclear::use_q = laneclear->add_checkbox(myhero->get_model() + ".laneclear.q", "Use Q", false);
+                laneclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                laneclear::use_w = laneclear->add_checkbox(myhero->get_model() + ".laneclear.w", "Use W", false);
+                laneclear::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+            }
+
+            auto jungleclear = main_tab->add_tab(myhero->get_model() + ".jungleclear", "Jungle Clear Settings");
+            {
+                jungleclear::use_q = jungleclear->add_checkbox(myhero->get_model() + ".jungleclear.q", "Use Q", true);
+                jungleclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                jungleclear::use_w = jungleclear->add_checkbox(myhero->get_model() + ".jungleclear.w", "Use W", true);
+                jungleclear::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+            }
+
+            auto hitchance = main_tab->add_tab(myhero->get_model() + ".hitchance", "Hitchance Settings");
+            {
+                hitchance::w_hitchance = hitchance->add_combobox(myhero->get_model() + ".hitchance.e", "Hitchance E", { {"Low",nullptr},{"Medium",nullptr },{"High", nullptr},{"Very High",nullptr} }, 2);
+            }
+
+            auto misc = main_tab->add_tab(myhero->get_model() + ".misc", "Misc");
+            {
+                misc::use_w_antigapcloser = misc->add_checkbox(myhero->get_model() + ".misc.use_w_antigapcloser", "W Anti-Gapcloser", false);
+            }
+
+            auto draw_settings = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings Settings");
+            {
+                float color[] = { 0.0f, 1.0f, 1.0f, 1.0f };
+                draw_settings::draw_range_w = draw_settings->add_checkbox(myhero->get_model() + ".draw.w", "Draw W range", true);
+                draw_settings::draw_range_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+                draw_settings::w_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.w.color", "W Color", color);
+                draw_settings::draw_range_e = draw_settings->add_checkbox(myhero->get_model() + ".draw.e", "Draw E range", true);
+                draw_settings::draw_range_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+                draw_settings::e_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.e.color", "E Color", color);
+            }
+            antigapcloser::add_event_handler(on_gapcloser);
+
+            event_handler<events::on_update>::add_callback(on_update);
+            event_handler<events::on_env_draw>::add_callback(on_draw);
+        }
         {
-            harass::use_q = harass->add_checkbox(myhero->get_model() + ".harass.q", "Use Q", true);
-            harass::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-            harass::use_w = harass->add_checkbox(myhero->get_model() + ".harass.w", "Use W", true);
-            harass::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-            harass::use_e = harass->add_checkbox(myhero->get_model() + ".harass.e", "Use E", true);
-            harass::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+            Permashow::Instance.Init(main_tab);
+            Permashow::Instance.AddElement("Spell Farm", laneclear::spell_farm);
         }
-
-        auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Lane Clear Settings");
-        {
-            laneclear::spell_farm = laneclear->add_hotkey(myhero->get_model() + ".laneclear.enabled", "Toggle Spell Farm", TreeHotkeyMode::Toggle, 0x04, true);
-            laneclear::use_q = laneclear->add_checkbox(myhero->get_model() + ".laneclear.q", "Use Q", false);
-            laneclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-            laneclear::use_w = laneclear->add_checkbox(myhero->get_model() + ".laneclear.w", "Use W", false);
-            laneclear::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-        }
-
-        auto jungleclear = main_tab->add_tab(myhero->get_model() + ".jungleclear", "Jungle Clear Settings");
-        {
-            jungleclear::use_q = jungleclear->add_checkbox(myhero->get_model() + ".jungleclear.q", "Use Q", true);
-            jungleclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-            jungleclear::use_w = jungleclear->add_checkbox(myhero->get_model() + ".jungleclear.w", "Use W", true);
-            jungleclear::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-        }
-
-        auto hitchance = main_tab->add_tab(myhero->get_model() + ".hitchance", "Hitchance Settings");
-        {
-            hitchance::w_hitchance = hitchance->add_combobox(myhero->get_model() + ".hitchance.e", "Hitchance E", { {"Low",nullptr},{"Medium",nullptr },{"High", nullptr},{"Very High",nullptr} }, 2);
-        }
-
-        auto misc = main_tab->add_tab(myhero->get_model() + ".misc", "Miscellaneous Settings");
-        {
-            misc::use_w_antigapcloser = misc->add_checkbox(myhero->get_model() + ".misc.use_w_antigapcloser", "W Anti-Gapcloser", false);
-        }
-
-        auto draw_settings = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings Settings");
-        {
-            float color[] = { 0.0f, 1.0f, 1.0f, 1.0f };
-            draw_settings::draw_range_w = draw_settings->add_checkbox(myhero->get_model() + ".draw.w", "Draw W range", true);
-            draw_settings::draw_range_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-            draw_settings::w_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.w.color", "W Color", color);
-            draw_settings::draw_range_e = draw_settings->add_checkbox(myhero->get_model() + ".draw.e", "Draw E range", true);
-            draw_settings::draw_range_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-            draw_settings::e_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.e.color", "E Color", color);
-            draw_settings::draw_range_r = draw_settings->add_checkbox(myhero->get_model() + ".draw.r", "Draw R range", true);
-            draw_settings::draw_range_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
-            draw_settings::r_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.r.color", "R Color", color);
-        }
-        antigapcloser::add_event_handler(on_gapcloser);
-
-        event_handler<events::on_update>::add_callback(on_update);
-        event_handler<events::on_env_draw>::add_callback(on_draw);
     }
-
     void unload()
     {
         plugin_sdk->remove_spell(q);
@@ -211,6 +213,8 @@ namespace singed
         plugin_sdk->remove_spell(r);
 
         menu->delete_tab(main_tab);
+
+        Permashow::Instance.Destroy();
 
         antigapcloser::remove_event_handler(on_gapcloser);
 
@@ -356,20 +360,20 @@ namespace singed
         {
             if (combo::use_q->get_bool())
             {
-                if (enemy->is_valid() && enemy->get_distance(myhero->get_position()) <= w->range() + 50)
+                if (enemy->is_valid() && enemy->get_distance(myhero->get_position()) <= q->range())
                 {
                     if (q->toogle_state() == 1)
                     {
-                        orbwalker->set_attack(false);
                         q->cast();
+                        orbwalker->set_attack(false);
                     }
                 }
                 else
                 {
                     if (q->toogle_state() == 2)
                     {
-                        orbwalker->set_attack(true);
                         q->cast();
+                        orbwalker->set_attack(true);
                     }
                 }
 
@@ -413,16 +417,15 @@ namespace singed
         {
             for (auto& enemy : entitylist->get_enemy_heroes())
             {
-                if (enemy->is_valid_target(e->range()) && !enemy->is_dead()&& !enemy->has_buff(buff_hash("SingedW")))
+                if (enemy->is_valid_target(e->range()) && !enemy->is_dead() && !enemy->has_buff(buff_hash("megaadhesiveslow")))
                 {
                     if (enemy->get_distance(myhero->get_position()) <= e->range())
                     {
-                        e->cast(enemy);
+                        if (e->get_damage(enemy) >= enemy->get_real_health())
+                        {
+                            e->cast(enemy);
+                        }
                     }
-                }
-                if (e->get_damage(enemy) >= enemy->get_health())
-                {
-                    e->cast(enemy);
                 }
             }
         }
@@ -432,33 +435,33 @@ namespace singed
 #pragma endregion
 
 #pragma region r_logic
-void r_logic()
-{
-    if (!utils::has_unkillable_buff(myhero))
+    void r_logic()
     {
-        if (combo::r_use_on_low_hp->get_bool())
+        if (!utils::has_unkillable_buff(myhero))
         {
-            if ((!combo::r_only_when_enemies_nearby->get_bool() || myhero->count_enemies_in_range(combo::r_hp_enemies_search_radius->get_int()) != 0))
+            if (combo::r_use_on_low_hp->get_bool())
             {
-                if ((myhero->get_health_percent() < combo::r_myhero_hp_under->get_int()) || (combo::r_calculate_incoming_damage->get_bool() && health_prediction->get_incoming_damage(myhero, combo::r_coming_damage_time->get_int() / 1000.0f, true) >= myhero->get_health()))
+                if ((!combo::r_only_when_enemies_nearby->get_bool() || myhero->count_enemies_in_range(combo::r_hp_enemies_search_radius->get_int()) != 0))
                 {
-                    if (r->cast())
+                    if ((myhero->get_health_percent() < combo::r_myhero_hp_under->get_int()) || (combo::r_calculate_incoming_damage->get_bool() && health_prediction->get_incoming_damage(myhero, combo::r_coming_damage_time->get_int() / 1000.0f, true) >= myhero->get_health()))
                     {
-                        return;
+                        if (r->cast())
+                        {
+                            return;
+                        }
                     }
                 }
             }
-        }
 
-        if (combo::r_use_if_x_enemies_nearby->get_bool())
-        {
-            if (myhero->count_enemies_in_range(combo::r_enemies_nearby_search_radius->get_int()) >= combo::r_enemies_nearby_minimum->get_int())
+            if (combo::r_use_if_x_enemies_nearby->get_bool())
             {
-                r->cast();
+                if (myhero->count_enemies_in_range(combo::r_enemies_nearby_search_radius->get_int()) >= combo::r_enemies_nearby_minimum->get_int())
+                {
+                    r->cast();
+                }
             }
         }
     }
-}
 #pragma endregion
 
 #pragma region get_hitchance
@@ -490,7 +493,7 @@ void r_logic()
         }
     }
 
-    
+
 
     float get_damage(game_object_script target)
     {
@@ -521,8 +524,5 @@ void r_logic()
 
         if (e->is_ready() && draw_settings::draw_range_e->get_bool())
             draw_manager->add_circle(myhero->get_position(), e->range(), draw_settings::e_color->get_color());
-
-        if (r->is_ready() && draw_settings::draw_range_r->get_bool())
-            draw_manager->add_circle(myhero->get_position(), r->range(), draw_settings::r_color->get_color());
     }
 }
