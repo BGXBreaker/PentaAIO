@@ -235,7 +235,7 @@ namespace leesin
                 float color_blue[] = { 0.0f, 0.4f, 1.0f, 1.0f };
                 float color_green[] = { 0.0f, 1.0f, 0.0f, 1.0f };
                 float color_dark_blue[] = { 0.4f, 0.3f, 1.0f, 1.0f };
-                float color11[] = { 0.5f, 0.0f, 0.9f, 1.0f }; //×Ï
+                float color11[] = { 0.5f, 0.0f, 0.9f, 1.0f }; //Ã—Ã
 
                 draw_settings::draw_range_q = draw_settings->add_checkbox(myhero->get_model() + ".drawingQ", "Draw Q range", true);
                 draw_settings::draw_range_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
@@ -333,7 +333,7 @@ namespace leesin
         }
         if (orbwalker->flee_mode())
         {
-            if (q->is_ready() && !w_active())
+            if (->is_ready() && !w_active())
             {
                 std::vector<game_object_script> allies;
 
