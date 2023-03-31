@@ -1,7 +1,7 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 
 PLUGIN_NAME("PentaAIO");
-SUPPORTED_CHAMPIONS(champion_id::Singed ,champion_id::LeeSin );
+SUPPORTED_CHAMPIONS(champion_id::Singed /*,champion_id::LeeSin*/ );
 PLUGIN_TYPE(plugin_type::champion);
 
 #include "singed.h"
@@ -17,9 +17,9 @@ PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
     case champion_id::Singed:
         singed::load();
         break;
-    case champion_id::LeeSin:
+    /*case champion_id::LeeSin:
         leesin::load();
-        break;
+        break;*/
     default:
         break;
         console->print("Champion %s is not supported!", myhero->get_model_cstr());
@@ -35,12 +35,12 @@ PLUGIN_API void on_sdk_unload()
 {
     switch (myhero->get_champion())
     {
-    case champion_id::Singed:
+   case champion_id::Singed:
         singed::unload();
         break;
-    case champion_id::LeeSin:
+    /*case champion_id::LeeSin:
         leesin::unload();
-        break;
+        break;*/
     default:
         break;
     }
