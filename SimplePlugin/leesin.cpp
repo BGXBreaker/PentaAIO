@@ -5,8 +5,11 @@
 namespace leesin
 {
     script_spell* q = nullptr;
+    script_spell* q2 = nullptr;
     script_spell* w = nullptr;
+    script_spell* w2 = nullptr;
     script_spell* e = nullptr;
+    script_spell* e2 = nullptr;
     script_spell* r = nullptr;
     script_spell* ward = nullptr;
     script_spell* flash = nullptr;
@@ -40,6 +43,7 @@ namespace leesin
     {
         TreeEntry* use_q = nullptr;
         TreeEntry* use_q2 = nullptr;
+        TreeEntry* auto_q_expire = nullptr;
         TreeEntry* q2_if_target_is_under_turret = nullptr;
         TreeEntry* use_w = nullptr;
         TreeEntry* use_w2 = nullptr;
@@ -74,11 +78,10 @@ namespace leesin
     }
     namespace fleemode
     {
-        TreeEntry* use_w = nullptr;
+        TreeEntry* w_ward_jump = nullptr;
+        TreeEntry* w_ward_key = nullptr;
         TreeEntry* w_jump_on_ally_champions = nullptr;
         TreeEntry* w_jump_on_ally_minions = nullptr;
-        TreeEntry* w_ward_jump = nullptr;
-        TreeEntry* ward_jump = nullptr;
     }
     namespace insec
     {
@@ -91,17 +94,22 @@ namespace leesin
     {
         TreeEntry* q_hitchance = nullptr;
     }
+    enum Position
+    {
+        Line,
+        Jungle
+    };
+
+    Position my_hero_region;
     void on_update();
     void on_draw();
-    void on_process_spell_cast(game_object_script sender, spell_instance_script spell);
+    void draw_dmg_rl();
     void q_logic();
     void w_logic();
     void e_logic();
     void r_logic();
+    void ward_jump_logic();
     void insec_logic();
-    float last_Q_time = 0.0f;
-    float last_W_time = 0.0f;
-    float last_E_time = 0.0f;
     bool q_active();
     bool w_active();
     bool e_active();
@@ -125,8 +133,11 @@ namespace leesin
     {
         q = plugin_sdk->register_spell(spellslot::q, 1100);
         q->set_skillshot(0.25f, 120.0f, 1800.0f, { collisionable_objects::minions, collisionable_objects::yasuo_wall, collisionable_objects::heroes }, skillshot_type::skillshot_line);
+        q2 = plugin_sdk->register_spell(spellslot::q, 1250);
         w = plugin_sdk->register_spell(spellslot::w, 700);
+        w2 = plugin_sdk->register_spell(spellslot::w, 0);
         e = plugin_sdk->register_spell(spellslot::e, 425);
+        e2 = plugin_sdk->register_spell(spellslot::e, 450);
         r = plugin_sdk->register_spell(spellslot::r, 375);
         ward = plugin_sdk->register_spell(spellslot::trinket, 600);
 
@@ -148,9 +159,11 @@ namespace leesin
                 combo::use_q = combo->add_checkbox(myhero->get_model() + "3", "Use Q", true);
                 combo::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
                 combo::use_q2 = combo->add_checkbox(myhero->get_model() + "4", "Use Q2", true);
-                auto q_config = combo->add_tab(myhero->get_model() + ".combo.q.config", "Q Config");
                 {
-                    combo::q2_if_target_is_under_turret = q_config->add_hotkey(myhero->get_model() + "5", "Use Q2 if target is under turret", TreeHotkeyMode::Toggle, 'A', false);
+                    auto q_config = combo->add_tab(myhero->get_model() + ".combo.q2.config", "Q2 Config");
+                    {
+                        combo::q2_if_target_is_under_turret = q_config->add_hotkey(myhero->get_model() + "5", "Use Q2 if target is under turret", TreeHotkeyMode::Toggle, 'A', false);
+                    }
                 }
                 combo::use_w = combo->add_checkbox(myhero->get_model() + "6", "Use W", true);
                 combo::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
@@ -195,10 +208,6 @@ namespace leesin
                 jungleclear::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
                 jungleclear::use_e2 = jungleclear->add_checkbox(myhero->get_model() + "28", "Use E2", true);
             }
-            auto hitchance = main_tab->add_tab(myhero->get_model() + "29", "Hitchance Settings");
-            {
-                hitchance::q_hitchance = hitchance->add_combobox(myhero->get_model() + "30", "Hitchance Q", { {"Low",nullptr},{"Medium",nullptr },{"High", nullptr},{"Very High",nullptr} }, 2);
-            }
             auto insec = main_tab->add_tab(myhero->get_model() + "31", "Insec Settings");
             {
                 insec::insec_key = insec->add_hotkey(myhero->get_model() + "65", "Insec Key", TreeHotkeyMode::Hold, 'T', false);
@@ -209,6 +218,16 @@ namespace leesin
                     insec::use_flash->set_texture(myhero->get_spell(spellslot::summoner1)->get_icon_texture());
                 else if (myhero->get_spell(spellslot::summoner2)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
                     insec::use_flash->set_texture(myhero->get_spell(spellslot::summoner2)->get_icon_texture());
+            }
+            auto fleemode = main_tab->add_tab(myhero->get_model() + "3177", "flee Settings");
+            {
+                fleemode::w_jump_on_ally_champions =fleemode->add_checkbox(myhero->get_model() + ".flee.w.jump_on_ally_champions", "Jump on ally champions", true);
+                fleemode::w_jump_on_ally_minions = fleemode->add_checkbox(myhero->get_model() + ".flee.w.jump_on_ally_minions", "Jump on ally minions", true);
+                fleemode::w_ward_jump = fleemode->add_checkbox(myhero->get_model() + ".flee.w.ward_jump", "Ward jump", true);
+            }
+            auto hitchance = main_tab->add_tab(myhero->get_model() + "29", "Hitchance Settings");
+            {
+                hitchance::q_hitchance = hitchance->add_combobox(myhero->get_model() + "30", "Hitchance Q", { {"Low",nullptr},{"Medium",nullptr },{"High", nullptr},{"Very High",nullptr} }, 2);
             }
             auto draw_settings = main_tab->add_tab(myhero->get_model() + ".drawings", "Drawings Settings");
             {
@@ -246,10 +265,11 @@ namespace leesin
                     draw_settings::draw_damage_settings::r_damage->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
                 }
             }
-           
+
         }
         event_handler<events::on_update>::add_callback(on_update);
         event_handler<events::on_env_draw>::add_callback(on_draw);
+        event_handler<events::on_draw>::add_callback(draw_dmg_rl);
     }
     void unload()
     {
@@ -265,6 +285,7 @@ namespace leesin
 
         event_handler<events::on_update>::remove_handler(on_update);
         event_handler<events::on_env_draw>::remove_handler(on_draw);
+        event_handler< events::on_draw >::remove_handler(draw_dmg_rl);
 
     }
     void on_update()
@@ -310,219 +331,278 @@ namespace leesin
                 }
             }
         }
-        if (orbwalker->lane_clear_mode() && laneclear::spell_farm->get_bool())
+        if (orbwalker->flee_mode())
+        {
+            if (q->is_ready() && !w_active())
+            {
+                std::vector<game_object_script> allies;
+
+                if (fleemode::w_jump_on_ally_champions->get_bool())
+                {
+                    auto champions = entitylist->get_ally_heroes();
+                    allies.insert(allies.end(), champions.begin(), champions.end());
+                }
+
+                if (fleemode::w_jump_on_ally_minions->get_bool())
+                {
+                    auto minions = entitylist->get_ally_minions();
+                    allies.insert(allies.end(), minions.begin(), minions.end());
+                }
+
+                std::sort(allies.begin(), allies.end(), [](game_object_script a, game_object_script b)
+                    {
+                        return a->get_distance(hud->get_hud_input_logic()->get_game_cursor_position()) < b->get_distance(hud->get_hud_input_logic()->get_game_cursor_position());
+                    });
+
+                allies.erase(std::remove_if(allies.begin(), allies.end(), [](game_object_script x)
+                    {
+                        return x == myhero || x->get_distance(myhero->get_position()) > w->range();
+                    }), allies.end());
+
+                if (!allies.empty())
+                {
+                    if (w->cast(allies.front()))
+                    {
+                        return;
+                    }
+                }
+
+                if (fleemode::w_ward_jump->get_bool())
+                {
+                    ward_jump_logic();
+                }
+            }
+        }
+        if (orbwalker->lane_clear_mode())
         {
             auto lane_minions = entitylist->get_enemy_minions();
-
             auto monsters = entitylist->get_jugnle_mobs_minions();
 
+#pragma region  SortMinions
             lane_minions.erase(std::remove_if(lane_minions.begin(), lane_minions.end(), [](game_object_script x)
                 {
                     return !x->is_valid_target(q->range());
                 }), lane_minions.end());
+
             monsters.erase(std::remove_if(monsters.begin(), monsters.end(), [](game_object_script x)
                 {
                     return !x->is_valid_target(q->range());
                 }), monsters.end());
+
+            std::sort(lane_minions.begin(), lane_minions.end(), [](game_object_script a, game_object_script b)
+                {
+                    return a->get_position().distance(myhero->get_position()) < b->get_position().distance(myhero->get_position());
+                });
+
             std::sort(monsters.begin(), monsters.end(), [](game_object_script a, game_object_script b)
                 {
                     return a->get_max_health() > b->get_max_health();
                 });
 
+            if (!lane_minions.empty()) my_hero_region = Position::Line;
+            else if (!monsters.empty()) my_hero_region = Position::Jungle;
+#pragma endregion
+
             if (!lane_minions.empty())
             {
-                if ((laneclear::use_q->get_bool() && !q_active() && last_Q_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
+                if (q->is_ready() && laneclear::use_q->get_bool() && !q_active())
                 {
-                    if (q->cast(monsters.front()->get_position()))
+                    q->cast(lane_minions.front());
+                    if (laneclear::use_q2->get_bool() && q_active())
                     {
-                        return;
-                    }
-                }
-                if (laneclear::use_q2->get_bool() && q_active())
-                {
-                    if ((last_Q_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
-                    {
-                        if (q->cast())
+                        if (q2->cast())
                         {
                             return;
                         }
                     }
                 }
-
-                if ((laneclear::use_e->get_bool() && !e_active() && last_E_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
+                if (e->is_ready() && laneclear::use_e->get_bool())
                 {
-                    if (e->cast_on_best_farm_position(laneclear::e_use_if_hit_minions->get_int()))
-                    {
-                        return;
-                    }
-                }
-                if (laneclear::use_e2->get_bool() && e_active())
-                {
-                    if ((last_E_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
-                    {
-                        if (e->cast())
-                        {
-                            return;
-                        }
-                    }
+                    e->cast_on_best_farm_position(laneclear::e_use_if_hit_minions->get_int());
                 }
             }
             if (!monsters.empty())
             {
-                if ((jungleclear::use_q->get_bool() && !q_active() && last_Q_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
+                //Jungleclear logic
+                if (q->is_ready())
                 {
-                    if (q->cast(monsters.front()->get_position()))
+                    if (jungleclear::use_q->get_bool() && !q_active())
                     {
-                        return;
+                        q->cast(monsters.front());
+                    }
+
+                    if (jungleclear::use_q2->get_bool() && q_active() && !myhero->get_buff(buff_hash("blindmonkpassive_cosmetic")))
+                    {
+                        q2->cast();
                     }
                 }
-                if (jungleclear::use_q2->get_bool() && q_active())
+                if (w->is_ready())
                 {
-                    if (last_Q_time + 3.0 < gametime->get_time() || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
+                    if (jungleclear::use_w->get_bool() && !w_active() && !myhero->get_buff(buff_hash("blindmonkpassive_cosmetic")))
                     {
-                        if (q->cast())
-                        {
-                            return;
-                        }
+                        w->cast(myhero);
+                    }
+
+                    if (jungleclear::use_w2->get_bool() && w_active() && !myhero->get_buff(buff_hash("blindmonkpassive_cosmetic")))
+                    {
+                        q2->cast();
                     }
                 }
-                if ((jungleclear::use_w->get_bool() && !w_active() && last_W_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
+                if (e->is_ready())
                 {
-                    if (w->cast(myhero))
+                    if (jungleclear::use_e->get_bool() && !e_active() && !myhero->get_buff(buff_hash("blindmonkpassive_cosmetic")))
                     {
-                        return;
+                        e->cast(monsters.front());
+                    }
+
+                    if (jungleclear::use_e2->get_bool() && e_active() && !myhero->get_buff(buff_hash("blindmonkpassive_cosmetic")))
+                    {
+                        q2->cast();
                     }
                 }
-                if (jungleclear::use_w2->get_bool() && w_active())
-                {
-                    if ((last_W_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
-                    {
-                        if (w->cast())
-                        {
-                            return;
-                        }
-                    }
-                }
-                if ((jungleclear::use_e->get_bool() && !e_active() && last_E_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
-                {
-                    if (e->cast(monsters.front()->get_position()))
-                    {
-                        return;
-                    }
-                }
-                if (jungleclear::use_e2->get_bool() && e_active())
-                {
-                    if ((last_E_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
-                    {
-                        if (e->cast())
-                        {
-                            return;
-                        }
-                    }
-                }
+
             }
         }
     }
+
 #pragma region q_logic
     void q_logic()
     {
         auto target = target_selector->get_target(q->range(), damage_type::physical);
-        if (target != nullptr)
+        if (combo::use_q->get_bool())
         {
-            if (combo::use_q->get_bool() && !q_active() && last_Q_time + 6.0f < gametime->get_time())
+            if (target != nullptr)
             {
-                if (q->cast(target, utils::get_hitchance(hitchance::q_hitchance)))
+                if (!q_active())
                 {
-                    return;
+                    q->cast(target, utils::get_hitchance(hitchance::q_hitchance));
                 }
             }
-            if (combo::use_q2->get_bool() && q_active())
+            if (combo::use_q2->get_bool())
             {
-                if (!myhero->is_under_enemy_turret() || combo::q2_if_target_is_under_turret->get_bool())
+
+                if (target != nullptr && !target->is_dead() && q_active() && (!target->is_under_ally_turret() || combo::q2_if_target_is_under_turret->get_bool()))
                 {
-                    if (last_Q_time + 3.0 < gametime->get_time())
-                    {
-                        if (q->cast())
-                        {
-                            return;
-                        }
-                    }
+
+                    q->cast();
+
                 }
             }
         }
     }
+
 #pragma endregion
 
+
+
 #pragma region w_logic
-        void w_logic()
+    void w_logic()
+    {
+        auto target = target_selector->get_target(myhero->get_attackRange(), damage_type::magical);
+        if (combo::use_w->get_bool())
         {
-            auto target = target_selector->get_target(myhero->get_attackRange(), damage_type::magical);
-            if ((combo::use_w->get_bool() && !w_active() && last_W_time + 3.0 < gametime->get_time()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
+            if (target != nullptr)
             {
-                if (w->cast(myhero))
+                if ((combo::use_w->get_bool() && !w_active()) || !myhero->has_buff(buff_hash("blindmonkpassive_cosmetic")))
                 {
+                    w->cast(myhero);
                     return;
                 }
             }
             if (combo::use_w2->get_bool() && w_active())
             {
-                if (last_W_time + 3.0 < gametime->get_time() && myhero->get_position().count_enemies_in_range(myhero->get_attackRange()) >= 1)
+                if (myhero->get_position().count_enemies_in_range(myhero->get_attackRange()) >= 1)
                 {
                     w->cast();
                 }
-                else if (!myhero->has_buff(buff_hash("blindmonkpassive_cosemtic")))
+                else if (!myhero->has_buff(buff_hash("blindmonkpassive_cosmetic")) && myhero->get_position().count_enemies_in_range(myhero->get_attackRange()) >= 1)
                 {
                     w->cast();
                 }
             }
+
         }
+    }
 #pragma endregion
 
 #pragma region e_logic
-        void e_logic()
+    void e_logic()
+    {
+        auto target = target_selector->get_target(e->range(), damage_type::magical);
+        if (target != nullptr)
         {
-            auto target = target_selector->get_target(e->range(), damage_type::magical);
-            if (target != nullptr)
+            if (combo::use_e->get_bool() && !e_active())
             {
-                if (combo::use_e->get_bool() && !e_active() && last_E_time + 3.0 < gametime->get_time())
+                e->cast();
+            }
+            if (combo::use_e2->get_bool() && e_active())
+            {
+
+                if (e->cast())
                 {
-                    if (e->cast())
-                    {
-                        return;
-                    }
+                    return;
                 }
-                if (combo::use_e2->get_bool() && e_active())
+
+            }
+        }
+    }
+#pragma endregion
+
+#pragma region r_logic
+    void r_logic()
+    {
+        auto target = target_selector->get_target(r->range(), damage_type::physical);
+        if (target == nullptr || !target->is_valid_target() || target->is_zombie() || target->is_invulnerable()) return;
+        {
+            if (combo::use_r->get_bool())
+            {
+                if (calculate_r_damage(target) >= target->get_real_health())
                 {
-                    if (last_E_time + 3.0 < gametime->get_time())
+                    r->cast(target);
+                }
+            }
+        }
+    }
+#pragma endregion
+
+#pragma region ward_jump_logic
+    void ward_jump_logic()
+    {
+        game_object_script near_ward = nullptr;
+
+        for (auto& object : entitylist->get_other_minion_objects())
+        {
+            if (object->is_valid() && !w_active())
+            {
+                if (object->get_distance(hud->get_hud_input_logic()->get_game_cursor_position()))
+                {
+                    if (myhero->is_facing(object))
                     {
-                        if (e->cast())
+                        if (object->get_name().compare("SightWard") == 0)
                         {
-                            return;
+                            near_ward = object;
+                            break;
                         }
                     }
                 }
             }
         }
-#pragma endregion
 
-#pragma region r_logic
-        void r_logic()
+        if (ward->is_ready()&& !w_active())
         {
-            auto target = target_selector->get_target(r->range(), damage_type::physical);
-            if (target == nullptr || !target->is_valid_target() || target->is_zombie() || target->is_invulnerable()) return;
+            if (ward->cast(hud->get_hud_input_logic()->get_game_cursor_position()))
             {
-                if (combo::use_r->get_bool())
-                {
-                    if (calculate_r_damage(target) >= target->get_health())
-                    {
-                        r->cast(target);
-                    }
-                }
+                return;
             }
         }
+        else
+        {
+            w->cast(near_ward);
+        }
+    }
 #pragma endregion
 
-#pragma region get_hitchance
+#pragma region hit_chance
     hit_chance get_hitchance(TreeEntry* entry)
     {
         switch (entry->get_int())
@@ -540,37 +620,6 @@ namespace leesin
     }
 #pragma endregion
 
-#pragma region on_process_spell_cast
-    void on_process_spell_cast(game_object_script sender, spell_instance_script spell)
-    {
-        auto spell_hash = spell->get_spell_data()->get_name_hash();
-        if (sender->is_me() && spell_hash == spell_hash("BlindMonkQOne"))
-        {
-            last_Q_time = gametime->get_time();
-        }
-        if (sender->is_me() && spell_hash == spell_hash("BlindMonkWOne"))
-        {
-            last_W_time = gametime->get_time();
-        }
-        if (sender->is_me() && spell_hash == spell_hash("BlindMonkEOne"))
-        {
-            last_E_time = gametime->get_time();
-        }
-    }
-#pragma endregion
-
-    bool q_active()
-    {
-        return myhero->has_buff(buff_hash("blindmonkqmanager"));
-    }
-    bool w_active()
-    {
-        return myhero->has_buff(buff_hash("blindmonkwmanager"));
-    }
-    bool e_active()
-    {
-        return myhero->has_buff(buff_hash("blindmonkemanager"));
-    }
     float calculate_q1_damage(game_object_script target)
     {
 
@@ -584,7 +633,7 @@ namespace leesin
     {
         float q2_damage = q2_damages[q->level() - 1] + q2_coef * myhero->get_additional_attack_damage();
         float missing_hp_perc = 100 - target->get_health_percent();
-        q2_damage += missing_hp_perc * q2_damage;
+        q2_damage += (q2_damage / 100) * missing_hp_perc;
         float q2_calculate_damage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::physical, q2_damage);
 
         return q2_calculate_damage;
@@ -592,37 +641,33 @@ namespace leesin
 
     float calculate_e_damage(game_object_script target)
     {
-        float e_damage = e_damages[e->level() - 1] + (myhero->get_additional_attack_damage() * 1.0);
+        float e_damage = e_damages[e->level() - 1] + (myhero->get_total_attack_damage() * e_coef);
         float e_calculate_damage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::magical, e_damage);
 
         return e_calculate_damage;
     }
     float calculate_r_damage(game_object_script target)
     {
-        float r_damage = r_damages[r->level() - 1] + (r_coef * myhero->get_total_attack_damage());
+        float r_damage = r_damages[r->level() - 1] + (myhero->get_additional_attack_damage() * r_coef);
         float r_calculate_damage = damagelib->calculate_damage_on_unit(myhero, target, damage_type::physical, r_damage);
 
         return r_calculate_damage;
     }
-
-    void on_draw()
+    bool q_active()
     {
-        if (myhero->is_dead())
-        {
-            return;
-        }
-
-        if (q->is_ready() && draw_settings::draw_range_q->get_bool())
-            draw_manager->add_circle(myhero->get_position(), q->range(), draw_settings::q_color->get_color());
-
-        if (w->is_ready() && draw_settings::draw_range_w->get_bool())
-            draw_manager->add_circle(myhero->get_position(), w->range(), draw_settings::w_color->get_color());
-
-        if (e->is_ready() && draw_settings::draw_range_e->get_bool())
-            draw_manager->add_circle(myhero->get_position(), e->range(), draw_settings::e_color->get_color());
-
-        if (r->is_ready() && draw_settings::draw_range_r->get_bool())
-            draw_manager->add_circle(myhero->get_position(), r->range(), draw_settings::r_color->get_color());
+        return  myhero->get_spell(spellslot::q)->get_name() == "BlindMonkQTwo";
+    }
+    bool w_active()
+    {
+        return  myhero->get_spell(spellslot::w)->get_name() == "BlindMonkWTwo";
+    }
+    bool e_active()
+    {
+        return  myhero->get_spell(spellslot::e)->get_name() == "BlindMonkETwo";
+    }
+ 
+    void draw_dmg_rl()
+    {
         if (draw_settings::draw_damage_settings::draw_damage->get_bool())
         {
             for (auto& enemy : entitylist->get_enemy_heroes())
@@ -650,5 +695,26 @@ namespace leesin
                 }
             }
         }
+    }
+
+
+    void on_draw()
+    {
+        if (myhero->is_dead())
+        {
+            return;
+        }
+
+        if (q->is_ready() && draw_settings::draw_range_q->get_bool())
+            draw_manager->add_circle(myhero->get_position(), q->range(), draw_settings::q_color->get_color());
+
+        if (w->is_ready() && draw_settings::draw_range_w->get_bool())
+            draw_manager->add_circle(myhero->get_position(), w->range(), draw_settings::w_color->get_color());
+
+        if (e->is_ready() && draw_settings::draw_range_e->get_bool())
+            draw_manager->add_circle(myhero->get_position(), e->range(), draw_settings::e_color->get_color());
+
+        if (r->is_ready() && draw_settings::draw_range_r->get_bool())
+            draw_manager->add_circle(myhero->get_position(), r->range(), draw_settings::r_color->get_color());
     }
 }
