@@ -1,7 +1,7 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 
 PLUGIN_NAME("PentaAIO");
-SUPPORTED_CHAMPIONS(champion_id::Singed ,champion_id::LeeSin );
+SUPPORTED_CHAMPIONS(champion_id::Singed , champion_id::LeeSin);
 PLUGIN_TYPE(plugin_type::champion);
 
 #include "singed.h"
