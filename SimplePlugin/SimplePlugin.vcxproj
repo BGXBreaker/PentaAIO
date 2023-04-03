@@ -178,7 +178,7 @@
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
     <ClInclude Include="leesin.h" />
     <ClInclude Include="milio.h" />
-    <ClInclude Include="permashow.h" />
+    <ClInclude Include="permashow.hpp" />
     <ClInclude Include="singed.h" />
     <ClInclude Include="SpellDB.h" />
     <ClInclude Include="utils.h" />
