@@ -28,9 +28,6 @@
     <ClCompile Include="SpellDB.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="milio.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="permashow.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -55,9 +52,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="SpellDB.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="milio.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="permashow.hpp">

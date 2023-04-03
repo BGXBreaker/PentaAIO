@@ -166,7 +166,6 @@
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="leesin.cpp" />
-    <ClCompile Include="milio.cpp" />
     <ClCompile Include="permashow.cpp" />
     <ClCompile Include="singed.cpp" />
     <ClCompile Include="SpellDB.cpp" />
@@ -177,7 +176,6 @@
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
     <ClInclude Include="leesin.h" />
-    <ClInclude Include="milio.h" />
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="singed.h" />
     <ClInclude Include="SpellDB.h" />
