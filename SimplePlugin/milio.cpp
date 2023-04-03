@@ -252,7 +252,7 @@ namespace milio
 	}
 
 #pragma region can_use_e_on
-	bool can_use_q_on(game_object_script ally)
+	bool can_use_e_on(game_object_script ally)
 	{
 		auto it = combo::e_use_on.find(ally->get_network_id());
 		if (it == combo::e_use_on.end())
@@ -299,7 +299,7 @@ namespace milio
 		{
 			for (auto& enemy : entitylist->get_enemy_heroes())
 			{
-				if (enemy->is_valid() && !enemy->is_dead() && enemy->get_distance(myhero->get_position()) > 525 && 525 * attack_range_increase >= enemy->get_distance(myhero->get_position()))
+				if (enemy->is_valid() && !enemy->is_dead() && enemy->get_distance(myhero->get_position()) > myhero->get_attack_range() && (myhero->get_attack_range() * attack_range_increase >= enemy->get_distance(myhero->get_position())))
 				{
 					w->cast(myhero);
 				}

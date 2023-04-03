@@ -13,6 +13,7 @@ namespace leesin
     script_spell* r = nullptr;
     script_spell* ward = nullptr;
     script_spell* flash = nullptr;
+    script_spell* control_ward = nullptr;
 
     TreeTab* main_tab = nullptr;
 
@@ -140,6 +141,7 @@ namespace leesin
         e2 = plugin_sdk->register_spell(spellslot::e, 450);
         r = plugin_sdk->register_spell(spellslot::r, 375);
         ward = plugin_sdk->register_spell(spellslot::trinket, 600);
+        spellslot control_ward = spellslot::invalid;
 
         q->set_spell_lock(false);
         w->set_spell_lock(false);
@@ -294,6 +296,17 @@ namespace leesin
         {
             return;
         }
+      auto slot = myhero->has_item(ItemId::Control_Ward);
+
+if (slot != spellslot::invalid && myhero->get_spell_state(slot) == spell_state::Ready)
+{
+    spellslot control_ward = slot;
+}
+else
+{
+    spellslot control_ward = spellslot::invalid;
+}
+
         if (orbwalker->combo_mode())
         {
             if (q->is_ready() && combo::use_q->get_bool())
@@ -333,7 +346,7 @@ namespace leesin
         }
         if (orbwalker->flee_mode())
         {
-            if (q->is_ready() && !w_active())
+            if (w->is_ready() && !w_active())
             {
                 std::vector<game_object_script> allies;
 
@@ -356,7 +369,7 @@ namespace leesin
 
                 allies.erase(std::remove_if(allies.begin(), allies.end(), [](game_object_script x)
                     {
-                        return x == myhero || x->get_distance(myhero->get_position()) > w->range();
+                        return x == myhero || x->get_distance(myhero->get_position()) == w->range();
                     }), allies.end());
 
                 if (!allies.empty())
@@ -457,7 +470,7 @@ namespace leesin
 
                     if (jungleclear::use_e2->get_bool() && e_active() && !myhero->get_buff(buff_hash("blindmonkpassive_cosmetic")))
                     {
-                        q2->cast();
+                        e2->cast();
                     }
                 }
 
@@ -588,7 +601,7 @@ namespace leesin
             }
         }
 
-        if (ward->is_ready()&& !w_active())
+        if (ward->is_ready() && !w_active())
         {
             if (ward->cast(hud->get_hud_input_logic()->get_game_cursor_position()))
             {
