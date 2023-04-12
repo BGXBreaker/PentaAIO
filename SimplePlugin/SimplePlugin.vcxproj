@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\Users\GameBreakerXD\AppData\Roaming\8a4a4c5bc8151167b2d3b833168e277b\plugins\x86</OutDir>
+    <OutDir>C:\Users\GameBreakerXD\AppData\Roaming\7b7d04ea299800a72d03294b1a485a49\plugins\x64</OutDir>
     <TargetName>PentaAIO</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -164,7 +164,9 @@
   <ItemGroup>
     <ClCompile Include="..\plugin_sdk\clipper.cpp" />
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
+    <ClCompile Include="azir.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="khazix.cpp" />
     <ClCompile Include="leesin.cpp" />
     <ClCompile Include="permashow.cpp" />
     <ClCompile Include="singed.cpp" />
@@ -175,6 +177,8 @@
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
+    <ClInclude Include="azir.h" />
+    <ClInclude Include="khazix.h" />
     <ClInclude Include="leesin.h" />
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="singed.h" />

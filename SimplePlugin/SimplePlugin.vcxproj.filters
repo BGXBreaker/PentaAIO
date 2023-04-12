@@ -34,6 +34,12 @@
     <ClCompile Include="leesin.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="azir.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="khazix.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -58,6 +64,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="leesin.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="azir.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="khazix.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
