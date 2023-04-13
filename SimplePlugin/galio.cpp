@@ -368,7 +368,7 @@ namespace galio
 
 		if (target != nullptr)
 		{
-			if (e->get_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health())
+			if (e->is_ready() && e->get_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health())
 			{
 				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
 				{
@@ -376,7 +376,7 @@ namespace galio
 				}
 			}
 
-			if (myhero->get_distance(target) > myhero->get_attack_range() &&target->is)
+			if (myhero->get_distance(target) > myhero->get_attack_range())
 			{
 				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
 				{
@@ -385,7 +385,16 @@ namespace galio
 						e->cast(target);
 					}
 				}
-
+			}
+			if (e->is_ready() && !w->is_ready())
+			{
+				if (e->get_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health())
+				{
+					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
+					{
+						e->cast(target);
+					}
+				}
 			}
 			if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 1)
 			{
