@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\Users\GameBreakerXD\AppData\Roaming\7b7d04ea299800a72d03294b1a485a49\plugins\x64</OutDir>
+    <OutDir>C:\Users\GameBreaker\AppData\Roaming\691a40d040e912a4f2694e990182804a\plugins\x64</OutDir>
     <TargetName>PentaAIO</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -164,25 +164,19 @@
   <ItemGroup>
     <ClCompile Include="..\plugin_sdk\clipper.cpp" />
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
-    <ClCompile Include="azir.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="khazix.cpp" />
-    <ClCompile Include="leesin.cpp" />
+    <ClCompile Include="galio.cpp" />
     <ClCompile Include="permashow.cpp" />
     <ClCompile Include="singed.cpp" />
-    <ClCompile Include="SpellDB.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
-    <ClInclude Include="azir.h" />
-    <ClInclude Include="khazix.h" />
-    <ClInclude Include="leesin.h" />
+    <ClInclude Include="galio.h" />
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="singed.h" />
-    <ClInclude Include="SpellDB.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

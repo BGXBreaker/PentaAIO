@@ -94,7 +94,7 @@ namespace singed
 
     void load()
     {
-        q = plugin_sdk->register_spell(spellslot::q, myhero->get_attack_range() + 50);
+        q = plugin_sdk->register_spell(spellslot::q, myhero->get_attack_range() + 70);
         w = plugin_sdk->register_spell(spellslot::w, 1000);
         w->set_skillshot(0.25f, 265.0f, FLT_MAX, { }, skillshot_type::skillshot_circle);
         e = plugin_sdk->register_spell(spellslot::e, 135);
@@ -425,6 +425,10 @@ namespace singed
                         {
                             e->cast(enemy);
                         }
+                    }
+                    else if (w->cast())
+                    {
+                        e->cast(enemy);
                     }
                 }
             }

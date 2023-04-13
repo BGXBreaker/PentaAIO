@@ -25,19 +25,10 @@
     <ClCompile Include="utils.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="SpellDB.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="permashow.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="leesin.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="azir.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="khazix.cpp">
+    <ClCompile Include="galio.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -57,19 +48,10 @@
     <ClInclude Include="utils.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="SpellDB.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="permashow.hpp">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="leesin.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="azir.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="khazix.h">
+    <ClInclude Include="galio.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
