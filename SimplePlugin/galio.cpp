@@ -115,7 +115,7 @@ namespace galio
 		main_tab = menu->create_tab("galio", "Galio");
 		main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
 		{
-			main_tab->add_separator(myhero->get_model() + ".aio", "PentaoAIO : " + myhero->get_model());
+			main_tab->add_separator(myhero->get_model() + ".aio", "PekoAIO : " + myhero->get_model());
 			auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo Settings");
 			{
 				combo::use_q = combo->add_checkbox(myhero->get_model() + ".combo.q", "Use Q", true);
