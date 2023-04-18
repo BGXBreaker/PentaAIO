@@ -73,8 +73,18 @@ namespace galio
 
 	void on_update();
 	void on_draw();
+	void draw_dmg_rl();
 	void on_after_attack_orbwalker(game_object_script target);
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell);
+	float calculate_q_damage( game_object_script enemy);
+	float calculate_q_wind_damage(game_object_script enemy);
+	float calculate_e_damage(game_object_script enemy);
+
+	std::vector<float> q_damages = { 70,105,140,175,210 };
+	float q_coef = 0.75;
+
+	std::vector<float> e_damages = { 90,130,170,210,250 };
+	float e_coef = 0.9;
 
 	void q_logic();
 	void w_logic();
@@ -89,7 +99,7 @@ namespace galio
 	{
 		q = plugin_sdk->register_spell(spellslot::q, 825);
 		q->set_skillshot(0.25f, 150.0f, 1400.0f, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_circle);
-		w = plugin_sdk->register_spell(spellslot::w, 0);
+		w = plugin_sdk->register_spell(spellslot::w, 325);
 		w->set_charged(250.0f, 450.0f, 2.0f);
 		w->set_skillshot(0.0f, 450.0f, FLT_MAX, { }, skillshot_type::skillshot_circle);
 		e = plugin_sdk->register_spell(spellslot::e, 650);
@@ -105,7 +115,7 @@ namespace galio
 		main_tab = menu->create_tab("galio", "Galio");
 		main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
 		{
-			main_tab->add_separator(myhero->get_model() + ".aio", "PekoAIO : " + myhero->get_model());
+			main_tab->add_separator(myhero->get_model() + ".aio", "PentaoAIO : " + myhero->get_model());
 			auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo Settings");
 			{
 				combo::use_q = combo->add_checkbox(myhero->get_model() + ".combo.q", "Use Q", true);
@@ -193,12 +203,11 @@ namespace galio
 			event_handler<events::on_env_draw>::add_callback(on_draw);
 			event_handler<events::on_after_attack_orbwalker>::add_callback(on_after_attack_orbwalker);
 			event_handler<events::on_process_spell_cast>::add_callback(on_process_spell_cast);
+			event_handler<events::on_draw>::add_callback(draw_dmg_rl);
 
 			utils::on_load();
 
 		}
-
-
 	}
 	void unload()
 	{
@@ -213,6 +222,7 @@ namespace galio
 		event_handler<events::on_env_draw>::remove_handler(on_draw);
 		event_handler<events::on_process_spell_cast>::remove_handler(on_process_spell_cast);
 		event_handler<events::on_after_attack_orbwalker>::remove_handler(on_after_attack_orbwalker);
+		event_handler< events::on_draw >::remove_handler(draw_dmg_rl);
 
 	}
 	void on_update()
@@ -335,11 +345,11 @@ namespace galio
 		auto target = target_selector->get_target(w->range(), damage_type::magical);
 		for (auto&& enemy : entitylist->get_enemy_heroes())
 		{
-			if (enemy->is_valid() && !enemy->is_dead() && enemy->get_distance(myhero->get_position()) <= 450)
+			if (enemy->is_valid() && !enemy->is_dead() && enemy->get_distance(myhero->get_position()) <= w->range())
 			{
 				if (myhero->has_buff(buff_hash("GalioW")))
 				{
-					if (myhero->get_position().count_enemies_in_range(w_charg_range) >= 1 && myhero->count_enemies_in_range(425) == 0)
+					if (myhero->get_position().count_enemies_in_range(w_charg_range) >= 1 && myhero->count_enemies_in_range(w->range()-20) == 0)
 					{
 						myhero->update_charged_spell(w->get_slot(), myhero->get_position(), true);
 					}
@@ -355,8 +365,6 @@ namespace galio
 
 			}
 
-
-
 		}
 	}
 #pragma endregion
@@ -368,11 +376,24 @@ namespace galio
 
 		if (target != nullptr)
 		{
-			if (e->is_ready() && e->get_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health())
+			if (q->is_ready())
 			{
-				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
+				if ((calculate_q_damage(target) + calculate_q_wind_damage(target) + calculate_e_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health()))
 				{
-					e->cast(target);
+					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
+					{
+						e->cast(target);
+					}
+				}
+			}
+			else
+			{
+				if (calculate_e_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health())
+				{
+					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
+					{
+						e->cast(target);
+					}
 				}
 			}
 
@@ -386,15 +407,9 @@ namespace galio
 					}
 				}
 			}
-			if (e->is_ready() && !w->is_ready())
+			if (myhero->get_level() ==1 && e->is_ready())
 			{
-				if (e->get_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health())
-				{
-					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
-					{
-						e->cast(target);
-					}
-				}
+				e->cast(target);
 			}
 			if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 1)
 			{
@@ -423,7 +438,6 @@ namespace galio
 
 	void on_after_attack_orbwalker(game_object_script target)
 	{
-		//aqwae
 		if (q->is_ready())
 		{
 			if (target->is_ai_hero() && (orbwalker->combo_mode() && combo::use_q->get_bool() && myhero->is_in_auto_attack_range(target) && myhero->get_buff(buff_hash("galiopassive"))))
@@ -435,6 +449,60 @@ namespace galio
 			}
 		}
 	}
+	float calculate_q_damage(game_object_script enemy)
+	{
+		float q_raw_damage = q_damages[q->level() - 1] + (myhero->get_total_ability_power()* q_coef);
+		float q_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, q_raw_damage);
+
+		return q_calculated_damage;
+	}
+	float calculate_q_wind_damage(game_object_script enemy)
+	{
+		const float baseDamage = 0.1f; 
+		const float apRatio = 0.04f; 
+		const float maxHealth = enemy->get_max_health();
+		const float apBonus = myhero->get_total_ability_power() / 100.0f * apRatio;
+		const float totalDamage = maxHealth * (baseDamage + apBonus);
+
+		float q_wind_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, totalDamage);
+
+		return q_wind_calculated_damage;
+	}
+	float calculate_e_damage(game_object_script enemy)
+	{
+		float e_raw_damage = e_damages[e->level() - 1] + (myhero->get_total_ability_power() * e_coef);
+		float e_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, e_raw_damage);
+
+		return e_calculated_damage;
+	}
+	void draw_dmg_rl()
+	{
+		if (draw_settings::draw_damage_settings::draw_damage->get_bool())
+		{
+			for (auto& enemy : entitylist->get_enemy_heroes())
+			{
+				if (enemy->is_valid() && !enemy->is_dead() && enemy->is_hpbar_recently_rendered())
+				{
+					float damage = 0.0f;
+
+					if (q->is_ready() && draw_settings::draw_damage_settings::q_damage->get_bool())
+					{
+						damage += (calculate_q_damage(enemy) + calculate_q_wind_damage(enemy));
+					}
+
+					if (e->is_ready() && draw_settings::draw_damage_settings::e_damage->get_bool())
+						damage += calculate_e_damage(enemy);
+
+					for (int i = 0; i < draw_settings::draw_damage_settings::aa_damage->get_int(); i++)
+						damage += myhero->get_auto_attack_damage(enemy);
+
+					if (damage != 0.0f)
+						utils::draw_dmg_rl(enemy, damage, 0x8000ff00);
+				}
+			}
+		}
+	}
+
 	void on_draw()
 	{
 
@@ -480,9 +548,6 @@ namespace galio
 			draw_manager->add_text_on_screen((pos), MAKE_COLOR(255, 0, 0, 255), 17, "Dive off");
 		}
 
-
-
-
 		if (myhero->has_buff(buff_hash("GalioW")))
 		{
 			auto t = fmaxf(0, gametime->get_time() - last_w_time - 0.0f); //0.0
@@ -499,32 +564,6 @@ namespace galio
 		if (myhero->get_position().count_enemies_in_range(w_charg_range) == 0)
 		{
 			draw_manager->add_circle(myhero->get_position(), w_charg_range, MAKE_COLOR(255, 0, 0, 255), 1.f);
-		}
-
-
-
-		if (draw_settings::draw_damage_settings::draw_damage->get_bool())
-		{
-			for (auto& enemy : entitylist->get_enemy_heroes())
-			{
-				if (enemy->is_valid() && !enemy->is_dead() && enemy->is_hpbar_recently_rendered())
-				{
-					float damage = 0.0f;
-
-
-					if (q->is_ready() && draw_settings::draw_damage_settings::q_damage->get_bool())
-						damage += q->get_damage(enemy);
-
-					if (e->is_ready() && draw_settings::draw_damage_settings::e_damage->get_bool())
-						damage += e->get_damage(enemy);
-
-					for (int i = 0; i < draw_settings::draw_damage_settings::aa_damage->get_int(); i++)
-						damage += myhero->get_auto_attack_damage(enemy);
-
-					if (damage != 0.0f)
-						utils::draw_dmg_rl(enemy, damage, 0x8000ff00);
-				}
-			}
 		}
 
 	}
