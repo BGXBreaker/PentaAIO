@@ -126,7 +126,7 @@ namespace galio
 				combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 				auto e_mode = combo->add_tab(myhero->get_model() + ".combo.e", "E mode");
 				{
-					combo::e_mode = combo->add_combobox(myhero->get_model() + ".combo.e.mode", "E Mode", { {"EW", nullptr},{"WE", nullptr } }, 0);
+					combo::e_mode = e_mode->add_combobox(myhero->get_model() + ".combo.e.mode", "E Mode", { {"EW", nullptr},{"WE", nullptr } }, 0);
 				}
 				combo::allow_tower_dive = combo->add_hotkey(myhero->get_model() + ".combo.allow_tower_dive", "Allow Tower Dive", TreeHotkeyMode::Toggle, 'A', true);
 			}
@@ -403,7 +403,15 @@ namespace galio
 				{
 					if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 0 && w->is_ready() && combo::use_w->get_bool())
 					{
-						e->cast(target);
+						auto pos = e->get_prediction(target).get_cast_position();
+						if (!evade->is_dangerous(pos))
+						{
+							e->cast(pos);
+						}
+						else
+						{
+							e->cast(target);
+						}
 					}
 				}
 			}

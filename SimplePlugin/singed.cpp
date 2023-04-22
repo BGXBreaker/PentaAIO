@@ -133,18 +133,18 @@ namespace singed
 
                     combo::r_use_on_low_hp = r_config->add_checkbox(myhero->get_model() + ".combo.r.use_on_low_hp", "Use R on Low HP", true);
                     combo::r_use_on_low_hp->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
-                    combo::r_myhero_hp_under = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under", "Myhero HP is under (in %)", 35, 0, 100);
-                    combo::r_only_when_enemies_nearby = r_config->add_checkbox(myhero->get_model() + ".combo.r.only_when_enemies_nearby", "Only when enemies are nearby", true);
-                    combo::r_hp_enemies_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.hp_enemies_search_radius", "Enemies nearby search radius", 350, 150, 1600);
+                    combo::r_myhero_hp_under = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under", "Myhero HP is under .%", 35, 0, 100);
+                    combo::r_only_when_enemies_nearby = r_config->add_checkbox(myhero->get_model() + ".combo.r.only_when_enemies_nearby", "Only enemies are nearby", true);
+                    combo::r_hp_enemies_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.hp_enemies_search_radius", "Enemies distance range", 350, 150, 1600);
                     combo::r_calculate_incoming_damage = r_config->add_checkbox(myhero->get_model() + ".combo.r.calculate_incoming_damage", "Calculate incoming damage", true);
-                    combo::r_coming_damage_time = r_config->add_slider(myhero->get_model() + ".combo.r.coming_damage_time", "Set coming damage time (in ms)", 750, 0, 1000);
+                    combo::r_coming_damage_time = r_config->add_slider(myhero->get_model() + ".combo.r.coming_damage_time", "Set incoming damage time (in ms)", 750, 0, 1000);
 
                     r_config->add_separator(myhero->get_model() + ".combo.r.separator2", "enemies R range check");
 
                     combo::r_use_if_x_enemies_nearby = r_config->add_checkbox(myhero->get_model() + ".combo.r.use_if_x_enemies_nearby", "Use R if enemies nearby", true);
                     combo::r_use_if_x_enemies_nearby->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
                     combo::r_enemies_nearby_minimum = r_config->add_slider(myhero->get_model() + ".combo.r.enemies_nearby_minimum", "Minimum enemies nearby", 2, 1, 5);
-                    combo::r_enemies_nearby_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under_enemies_search_radius", "Enemies nearby search radius", 250, 150, 1600);
+                    combo::r_enemies_nearby_search_radius = r_config->add_slider(myhero->get_model() + ".combo.r.myhero_hp_under_enemies_search_radius", "Enemies distance range", 250, 150, 1600);
                 }
             }
 
