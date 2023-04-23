@@ -76,7 +76,7 @@ namespace galio
 	void draw_dmg_rl();
 	void on_after_attack_orbwalker(game_object_script target);
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell);
-	float calculate_q_damage( game_object_script enemy);
+	float calculate_q_damage(game_object_script enemy);
 	float calculate_q_wind_damage(game_object_script enemy);
 	float calculate_e_damage(game_object_script enemy);
 
@@ -126,7 +126,7 @@ namespace galio
 				combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 				auto e_mode = combo->add_tab(myhero->get_model() + ".combo.e", "E mode");
 				{
-					combo::e_mode = e_mode->add_combobox(myhero->get_model() + ".combo.e.mode", "E Mode", { {"EW", nullptr},{"WE", nullptr } }, 0);
+					combo::e_mode = combo->add_combobox(myhero->get_model() + ".combo.e.mode", "E Mode", { {"EW", nullptr},{"WE", nullptr } }, 0);
 				}
 				combo::allow_tower_dive = combo->add_hotkey(myhero->get_model() + ".combo.allow_tower_dive", "Allow Tower Dive", TreeHotkeyMode::Toggle, 'A', true);
 			}
@@ -222,7 +222,7 @@ namespace galio
 		event_handler<events::on_env_draw>::remove_handler(on_draw);
 		event_handler<events::on_process_spell_cast>::remove_handler(on_process_spell_cast);
 		event_handler<events::on_after_attack_orbwalker>::remove_handler(on_after_attack_orbwalker);
-		event_handler< events::on_draw >::remove_handler(draw_dmg_rl);
+		event_handler<events::on_draw >::remove_handler(draw_dmg_rl);
 
 	}
 	void on_update()
@@ -349,7 +349,7 @@ namespace galio
 			{
 				if (myhero->has_buff(buff_hash("GalioW")))
 				{
-					if (myhero->get_position().count_enemies_in_range(w_charg_range) >= 1 && myhero->count_enemies_in_range(w->range()-20) == 0)
+					if (myhero->get_position().count_enemies_in_range(w_charg_range) >= 1 && myhero->count_enemies_in_range(w->range() - 20) == 0)
 					{
 						myhero->update_charged_spell(w->get_slot(), myhero->get_position(), true);
 					}
@@ -357,10 +357,12 @@ namespace galio
 				else
 				{
 					if (myhero->get_position().count_enemies_in_range(w->range()) >= 1)
+					{
 						if (w->start_charging())
 						{
 							return;
 						}
+					}
 				}
 
 			}
@@ -392,17 +394,6 @@ namespace galio
 				{
 					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
 					{
-						e->cast(target);
-					}
-				}
-			}
-
-			if (myhero->get_distance(target) > myhero->get_attack_range())
-			{
-				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
-				{
-					if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 0 && w->is_ready() && combo::use_w->get_bool())
-					{
 						auto pos = e->get_prediction(target).get_cast_position();
 						if (!evade->is_dangerous(pos))
 						{
@@ -415,7 +406,18 @@ namespace galio
 					}
 				}
 			}
-			if (myhero->get_level() ==1 && e->is_ready())
+
+			if (myhero->get_distance(target) > myhero->get_attack_range())
+			{
+				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
+				{
+					if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 0 && w->is_ready() && combo::use_w->get_bool())
+					{
+						e->cast(target);
+					}
+				}
+			}
+			if (myhero->get_level() == 1 && e->is_ready())
 			{
 				e->cast(target);
 			}
@@ -432,7 +434,7 @@ namespace galio
 			}
 		}
 	}
-	
+
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell)
 	{
 		auto spell_hash = spell->get_spell_data()->get_name_hash();
@@ -459,15 +461,15 @@ namespace galio
 	}
 	float calculate_q_damage(game_object_script enemy)
 	{
-		float q_raw_damage = q_damages[q->level() - 1] + (myhero->get_total_ability_power()* q_coef);
+		float q_raw_damage = q_damages[q->level() - 1] + (myhero->get_total_ability_power() * q_coef);
 		float q_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, q_raw_damage);
 
 		return q_calculated_damage;
 	}
 	float calculate_q_wind_damage(game_object_script enemy)
 	{
-		const float baseDamage = 0.1f; 
-		const float apRatio = 0.04f; 
+		const float baseDamage = 0.1f;
+		const float apRatio = 0.04f;
 		const float maxHealth = enemy->get_max_health();
 		const float apBonus = myhero->get_total_ability_power() / 100.0f * apRatio;
 		const float totalDamage = maxHealth * (baseDamage + apBonus);
@@ -519,13 +521,13 @@ namespace galio
 			return;
 		}
 		if (q->is_ready() && draw_settings::draw_range_q->get_bool())
-			draw_manager->add_circle(myhero->get_position(), q->range(), draw_settings::q_color->get_color());
+			draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::q_color->get_color(), q->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
 
 		if (w->is_ready() && draw_settings::draw_range_w->get_bool())
-			draw_manager->add_circle(myhero->get_position(), w->range(), draw_settings::w_color->get_color());
+			draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::w_color->get_color(), w->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
 
 		if (e->is_ready() && draw_settings::draw_range_e->get_bool())
-			draw_manager->add_circle(myhero->get_position(), e->range(), draw_settings::e_color->get_color());
+			draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::e_color->get_color(), e->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
 
 		if (r->is_ready() && draw_settings::rMinimapRange->get_bool())
 			draw_manager->draw_circle_on_minimap(myhero->get_position(), r->range(), draw_settings::r_color->get_color());
@@ -567,12 +569,11 @@ namespace galio
 		}
 		if (myhero->get_position().count_enemies_in_range(w_charg_range) > 0)
 		{
-			draw_manager->add_circle(myhero->get_position(), w_charg_range, MAKE_COLOR(0, 255, 0, 255), 1.f);
+			draw_manager->add_circle_with_glow(myhero->get_position(), MAKE_COLOR(0, 255, 0, 255), w_charg_range, 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
 		}
 		if (myhero->get_position().count_enemies_in_range(w_charg_range) == 0)
 		{
-			draw_manager->add_circle(myhero->get_position(), w_charg_range, MAKE_COLOR(255, 0, 0, 255), 1.f);
+			draw_manager->add_circle_with_glow(myhero->get_position(), MAKE_COLOR(0, 255, 0, 255), w_charg_range, 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
 		}
-
 	}
 }

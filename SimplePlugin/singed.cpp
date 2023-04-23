@@ -524,9 +524,9 @@ namespace singed
         }
 
         if (w->is_ready() && draw_settings::draw_range_w->get_bool())
-            draw_manager->add_circle(myhero->get_position(), w->range(), draw_settings::w_color->get_color());
+            draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::w_color->get_color(), w->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
 
         if (e->is_ready() && draw_settings::draw_range_e->get_bool())
-            draw_manager->add_circle(myhero->get_position(), e->range(), draw_settings::e_color->get_color());
+            draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::e_color->get_color(), e->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
     }
 }
