@@ -1,7 +1,7 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 
 PLUGIN_NAME("PentaAIO");
-SUPPORTED_CHAMPIONS(champion_id::Singed, champion_id::Galio);
+SUPPORTED_CHAMPIONS(champion_id::Singed, champion_id::Galio );
 PLUGIN_TYPE(plugin_type::champion);
 
 #include "singed.h"
@@ -22,6 +22,7 @@ PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
         galio::load();
         break;
     default:
+        break;
         console->print("Champion %s is not supported!", myhero->get_model_cstr());
         return false;
     }
