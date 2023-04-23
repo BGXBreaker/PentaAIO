@@ -403,15 +403,7 @@ namespace galio
 				{
 					if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 0 && w->is_ready() && combo::use_w->get_bool())
 					{
-						auto pos = e->get_prediction(target).get_cast_position();
-						if (!evade->is_dangerous(pos))
-						{
-							e->cast(pos);
-						}
-						else
-						{
-							e->cast(target);
-						}
+						e->cast(target);
 					}
 				}
 			}
