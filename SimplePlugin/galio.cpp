@@ -511,6 +511,8 @@ namespace galio
 				}
 			}
 		}
+		if (r->is_ready() && draw_settings::rMinimapRange->get_bool())
+			draw_manager->draw_circle_on_minimap(myhero->get_position(), r->range(), draw_settings::r_color->get_color());
 	}
 
 	void on_draw()
@@ -529,8 +531,6 @@ namespace galio
 		if (e->is_ready() && draw_settings::draw_range_e->get_bool())
 			draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::e_color->get_color(), e->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
 
-		if (r->is_ready() && draw_settings::rMinimapRange->get_bool())
-			draw_manager->draw_circle_on_minimap(myhero->get_position(), r->range(), draw_settings::r_color->get_color());
 
 		//draw_manager->draw_circle_on_minimap(myhero->get_position(), r_radius[r->level() - 1], r->range(), draw_settings::r_color->get_color());
 		if (laneclear::spell_farm->get_bool())
