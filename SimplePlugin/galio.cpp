@@ -572,7 +572,7 @@ namespace galio
 		if (myhero->has_buff(buff_hash("GalioW")))
 		{
 			auto t = fmaxf(0, gametime->get_time() - last_w_time - 0.0f); //0.0
-			w_charg_range = 250 + (t * 150) < 470 ? 250 + (t * 150) : 470;
+			w_charg_range = 250 + (t * 150) < 470 ? 250 + (t * 150) : 450;
 		}
 		else
 		{
