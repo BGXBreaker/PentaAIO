@@ -43,6 +43,7 @@ namespace galio
 		TreeEntry* e_mode = nullptr;
 		TreeEntry* allow_tower_dive = nullptr;
 		TreeEntry* use_everfrost = nullptr;
+		TreeEntry* reamin_cd = nullptr;
 	}
 	namespace harass
 	{
@@ -122,6 +123,10 @@ namespace galio
 				combo::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 				combo::use_w = combo->add_checkbox(myhero->get_model() + ".combo.w", "Use W", true);
 				combo::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+				auto w_setting = combo->add_tab(myhero->get_model() + ".combo.w", "W setting");
+				{
+					combo::reamin_cd = combo->add_slider(myhero->get_model() + ".cd", " Don't use E if W remaing cooldown >= X", 2, 1, 18);
+				}
 				combo::use_e = combo->add_checkbox(myhero->get_model() + ".combo.e", "Use E", true);
 				combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 				auto e_mode = combo->add_tab(myhero->get_model() + ".combo.e", "E mode");
@@ -385,6 +390,7 @@ namespace galio
 					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
 					{
 						e->cast(target);
+						//myhero->print_chat(1, "killable e1");
 					}
 				}
 			}
@@ -398,10 +404,12 @@ namespace galio
 						if (!evade->is_dangerous(pos))
 						{
 							e->cast(pos);
+							//myhero->print_chat(1, "killable e pos");
 						}
 						else
 						{
 							e->cast(target);
+							//myhero->print_chat(1, "killable e2");
 						}
 					}
 				}
@@ -414,20 +422,23 @@ namespace galio
 					if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 0 && w->is_ready() && combo::use_w->get_bool())
 					{
 						e->cast(target);
+						//myhero->print_chat(1, "EW");
 					}
 				}
 			}
-			if (myhero->get_level() == 1 && e->is_ready())
+			if (e->is_ready() && !w->is_ready() && w->cooldown_time() <= combo::reamin_cd->get_int())
 			{
 				e->cast(target);
+				//myhero->print_chat(1, "combo E");
 			}
-			if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 1)
+			if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 1 && combo::use_w->get_bool())
 			{
 				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
 				{
 					if (target->has_buff(buff_hash("GalioWslow")))
 					{
 						(e->cast(target));
+						//myhero->print_chat(1, "WE");
 					}
 
 				}
