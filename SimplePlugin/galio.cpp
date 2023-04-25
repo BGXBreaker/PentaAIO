@@ -426,7 +426,7 @@ namespace galio
 					}
 				}
 			}
-			if (e->is_ready() && !w->is_ready() && w->cooldown_time() <= combo::reamin_cd->get_int())
+			if (e->is_ready() && !w->is_ready() && w->cooldown_time() >= combo::reamin_cd->get_int())
 			{
 				e->cast(target);
 				//myhero->print_chat(1, "combo E");
