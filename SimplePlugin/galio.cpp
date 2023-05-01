@@ -489,7 +489,7 @@ namespace galio
 				if (!utils::enabled_in_map(combo::use_r_on, ally)) continue;
 				if (ally->get_health_percent() > combo::ally_hp->get_int()) continue;
 				if (ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) == 0) continue;
-				if (ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) >= 1 && ally->get_position().count_allys_in_range(r->range()) >= 1)
+				if (ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) >= 1 && myhero->get_position().count_allys_in_range(r->range()) >= 1)
 				{
 					r->cast(ally);
 					return;
