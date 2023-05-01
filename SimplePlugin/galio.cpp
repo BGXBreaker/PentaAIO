@@ -40,10 +40,15 @@ namespace galio
 		TreeEntry* use_q = nullptr;
 		TreeEntry* use_w = nullptr;
 		TreeEntry* use_e = nullptr;
+		TreeEntry* use_r = nullptr;
 		TreeEntry* e_mode = nullptr;
 		TreeEntry* allow_tower_dive = nullptr;
 		TreeEntry* use_everfrost = nullptr;
 		TreeEntry* reamin_cd = nullptr;
+		TreeEntry* ally_hp = nullptr;
+		TreeEntry* enemy_distance = nullptr;
+		TreeEntry* semi_r = nullptr;
+		std::map<std::uint32_t, TreeEntry*> use_r_on;
 	}
 	namespace harass
 	{
@@ -90,8 +95,9 @@ namespace galio
 	void q_logic();
 	void w_logic();
 	void e_logic();
-
+	void r_logic();
 	float last_w_time;
+	float last_e_time;
 	float w_charg_range;
 
 	float r_radius[] = { 4000.0f, 4750.0f, 5500.0f };
@@ -129,11 +135,28 @@ namespace galio
 				}
 				combo::use_e = combo->add_checkbox(myhero->get_model() + ".combo.e", "Use E", true);
 				combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-				auto e_mode = combo->add_tab(myhero->get_model() + ".combo.e", "E mode");
+				auto e_mode1 = combo->add_tab(myhero->get_model() + ".combo.e", "E mode");
 				{
 					combo::e_mode = combo->add_combobox(myhero->get_model() + ".combo.e.mode", "E Mode", { {"EW", nullptr},{"WE", nullptr } }, 0);
 				}
 				combo::allow_tower_dive = combo->add_hotkey(myhero->get_model() + ".combo.allow_tower_dive", "Allow Tower Dive", TreeHotkeyMode::Toggle, 'A', true);
+				combo::use_r = combo->add_checkbox(myhero->get_model() + ".combo.r", "Use R", true);
+				combo::use_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+				auto r_config = combo->add_tab(myhero->get_model() + ".combo.r.config", "R settings");
+				{
+					combo::semi_r = r_config->add_hotkey(myhero->get_model() + ".semi.r", "Semi R", TreeHotkeyMode::Hold, 'R', false);
+					combo::ally_hp = r_config->add_slider(myhero->get_model() + ".hp", " Ally HP.%", 30, 1, 100);
+					combo::enemy_distance = r_config->add_slider(myhero->get_model() + ".pos", " Distance ally and enemy", 400, 1, 610);
+					auto use_r_on_tab = r_config->add_tab(myhero->get_model() + ".combo.use_r_on", "Use R On");
+					{
+						for (auto&& ally : entitylist->get_ally_heroes())
+						{
+							if (ally->is_me()) continue;
+							combo::use_r_on[ally->get_network_id()] = use_r_on_tab->add_checkbox(std::to_string(ally->get_network_id()), ally->get_model(), true, false);
+							combo::use_r_on[ally->get_network_id()]->set_texture(ally->get_square_icon_portrait());
+						}
+					}
+				}
 			}
 			auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Harass Settings");
 			{
@@ -240,7 +263,10 @@ namespace galio
 		{
 			r->set_range(r_radius[r->level() - 1]);
 		}
-
+		if (r->is_ready() && combo::semi_r->get_bool())
+		{
+			r_logic();
+		}
 		if (orbwalker->combo_mode())
 		{
 			if (q->is_ready() && combo::use_q->get_bool())
@@ -426,10 +452,13 @@ namespace galio
 					}
 				}
 			}
-			if (e->is_ready() && !w->is_ready() && w->cooldown_time() <= combo::reamin_cd->get_int())
+			if ((e->is_ready() && !w->is_ready() && w->cooldown_time() >= combo::reamin_cd->get_int()) || (!combo::use_w->get_bool()))
 			{
-				e->cast(target);
-				//myhero->print_chat(1, "combo E");
+				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
+				{
+					e->cast(target);
+					//myhero->print_chat(1, "combo E");
+				}
 			}
 			if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 1 && combo::use_w->get_bool())
 			{
@@ -445,6 +474,29 @@ namespace galio
 			}
 		}
 	}
+	void r_logic()
+	{
+		if (combo::use_r->get_bool() && combo::semi_r->get_bool())
+		{
+			if (!combo::semi_r->get_bool()) return;
+			for (auto&& ally : entitylist->get_ally_heroes())
+			{
+				if (ally == nullptr || ally->is_dead() || !ally->is_targetable()) continue;
+				if (ally->get_distance(myhero) > r->range()) continue;
+				if (ally->is_me()) continue;
+
+				if (utils::has_unkillable_buff(ally)) continue;
+				if (!utils::enabled_in_map(combo::use_r_on, ally)) continue;
+				if (ally->get_health_percent() > combo::ally_hp->get_int()) continue;
+				if (ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) == 0) continue;
+				if (ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) >= 1 && ally->get_position().count_allys_in_range(r->range()) >= 1)
+				{
+					r->cast(ally);
+					return;
+				}
+			}
+		}
+	}
 
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell)
 	{
@@ -454,6 +506,10 @@ namespace galio
 			last_w_time = gametime->get_time();
 			w_charg_range = 175;
 			//myhero->print_chat(1, "Test w cast");
+		}
+		if (sender->is_me() && spell_hash == spell_hash("GalioE"))
+		{
+			last_e_time = gametime->get_time();
 		}
 	}
 
@@ -534,7 +590,9 @@ namespace galio
 			return;
 		}
 		if (q->is_ready() && draw_settings::draw_range_q->get_bool())
+		{
 			draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::q_color->get_color(), q->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
+		}
 
 		if (w->is_ready() && draw_settings::draw_range_w->get_bool())
 			draw_manager->add_circle_with_glow(myhero->get_position(), draw_settings::w_color->get_color(), w->range(), 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
@@ -585,6 +643,22 @@ namespace galio
 		if (myhero->get_position().count_enemies_in_range(w_charg_range) == 0)
 		{
 			draw_manager->add_circle_with_glow(myhero->get_position(), MAKE_COLOR(0, 255, 0, 255), w_charg_range, 2.0f, glow_data(0.1f, 0.75f, 0.f, 1.f));
+		}
+		if (combo::use_r->get_bool() && r->is_ready())
+		{
+			for (auto&& ally : entitylist->get_ally_heroes())
+			{
+				if (ally->is_me()) continue;
+				if (ally->is_valid() && !ally->is_dead() && utils::enabled_in_map(combo::use_r_on, ally) && ally->get_health_percent() <= combo::ally_hp->get_int() && !utils::has_unkillable_buff(ally) && ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) >= 1 && ally->get_position().count_allys_in_range(r->range()) >= 1)
+				{
+					auto pos = myhero->get_position() + vector(500, 200);
+					renderer->world_to_screen(pos, pos);
+
+					char text[128];
+					sprintf(text, "Press R to save the world! ");
+					draw_manager->add_text_on_screen(pos, MAKE_COLOR(0, 255, 0, 255), 30, text);
+				}
+			}
 		}
 	}
 }
