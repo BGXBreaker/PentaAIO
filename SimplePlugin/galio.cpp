@@ -660,7 +660,7 @@ namespace galio
 				{
 					auto pos = myhero->get_position() + vector(draw_settings::x_pos->get_int(), draw_settings::y_pos->get_int());
 					renderer->world_to_screen(pos, pos);
-					draw_manager->add_text_on_screen((pos), MAKE_COLOR(255, 0, 0, 255), 30, "Press R to safe the world!!!");
+					draw_manager->add_text_on_screen((pos), MAKE_COLOR(0, 255, 0, 255), 30, "Press R to safe the world!!!");
 				}
 			}
 		}
