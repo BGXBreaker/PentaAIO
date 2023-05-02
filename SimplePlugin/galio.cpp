@@ -26,6 +26,9 @@ namespace galio
 		TreeEntry* Draw_Damage_color = nullptr;
 		TreeEntry* Draw_DMG_rl = nullptr;
 		TreeEntry* draw_transparency = nullptr;
+		TreeEntry* draw_text = nullptr;
+		TreeEntry* x_pos = nullptr;
+		TreeEntry* y_pos = nullptr;
 
 		namespace draw_damage_settings
 		{
@@ -201,17 +204,21 @@ namespace galio
 				draw_settings::draw_range_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 				draw_settings::q_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.q.color", "Q Color", color_red, true);
 
-				draw_settings::draw_range_w = draw_settings->add_checkbox(myhero->get_model() + ".drawingw", "Draw w range", true);
+				draw_settings::draw_range_w = draw_settings->add_checkbox(myhero->get_model() + ".drawingw", "Draw W range", true);
 				draw_settings::draw_range_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-				draw_settings::w_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.w.color", "w Color", color_pink, true);
+				draw_settings::w_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.w.color", "W Color", color_pink, true);
 
-				draw_settings::draw_range_e = draw_settings->add_checkbox(myhero->get_model() + ".drawinge", "Draw e range", true);
+				draw_settings::draw_range_e = draw_settings->add_checkbox(myhero->get_model() + ".drawinge", "Draw E range", true);
 				draw_settings::draw_range_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-				draw_settings::e_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.e.color", "e Color", color_yellow, true);
+				draw_settings::e_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.e.color", "E Color", color_yellow, true);
 
 				draw_settings::rMinimapRange = draw_settings->add_checkbox(myhero->get_model() + ".drawingr", "Draw Mini map R range", true);
 				draw_settings::rMinimapRange->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 				draw_settings::r_color = draw_settings->add_colorpick(myhero->get_model() + ".draw.r.color", "R Mini map Color", color_blue, true);
+
+				draw_settings::draw_text = draw_settings->add_checkbox(myhero->get_model() + ".text", "Draw R text", false);
+				draw_settings::x_pos = draw_settings->add_slider(myhero->get_model() + ".xpos", "Text X position", 500, 1, 1000);
+				draw_settings::y_pos = draw_settings->add_slider(myhero->get_model() + ".ypos", "Text Y position", 500, 1, 1000);
 
 
 				auto draw_damage = draw_settings->add_tab(myhero->get_model() + ".draw.damage", "Draw Damage");
@@ -651,14 +658,17 @@ namespace galio
 				if (ally->is_me()) continue;
 				if (ally->is_valid() && !ally->is_dead() && utils::enabled_in_map(combo::use_r_on, ally) && ally->get_health_percent() <= combo::ally_hp->get_int() && !utils::has_unkillable_buff(ally) && ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) >= 1 && ally->get_position().count_allys_in_range(r->range()) >= 1)
 				{
-					auto pos = myhero->get_position() + vector(500, 200);
+					auto pos = myhero->get_position() + vector(draw_settings::x_pos->get_int(), draw_settings::y_pos->get_int());
 					renderer->world_to_screen(pos, pos);
-
-					char text[128];
-					sprintf(text, "Press R to save the world! ");
-					draw_manager->add_text_on_screen(pos, MAKE_COLOR(0, 255, 0, 255), 30, text);
+					draw_manager->add_text_on_screen((pos), MAKE_COLOR(255, 0, 0, 255), 30, "Press R to safe the world!!!");
 				}
 			}
+		}
+		if (draw_settings::draw_text->get_bool())
+		{
+			auto pos = myhero->get_position() + vector(draw_settings::x_pos->get_int(), draw_settings::y_pos->get_int());
+			renderer->world_to_screen(pos, pos);
+			draw_manager->add_text_on_screen((pos), MAKE_COLOR(0, 255, 0, 255), 30, "Press R to safe the world!!!");
 		}
 	}
 }
