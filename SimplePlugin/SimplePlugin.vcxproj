@@ -169,6 +169,7 @@
     <ClCompile Include="permashow.cpp" />
     <ClCompile Include="singed.cpp" />
     <ClCompile Include="SpellDB.cpp" />
+    <ClCompile Include="translate.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +180,7 @@
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="singed.h" />
     <ClInclude Include="SpellDB.h" />
+    <ClInclude Include="translate.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

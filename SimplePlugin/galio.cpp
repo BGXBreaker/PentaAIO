@@ -1,7 +1,7 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 #include "galio.h"
 #include "utils.h"
-
+#include "translate.h"
 namespace galio
 {
 	script_spell* q = nullptr;
@@ -107,6 +107,7 @@ namespace galio
 
 	void load()
 	{
+		translate::load();
 		q = plugin_sdk->register_spell(spellslot::q, 825);
 		q->set_skillshot(0.25f, 150.0f, 1400.0f, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_circle);
 		w = plugin_sdk->register_spell(spellslot::w, 325);
@@ -656,7 +657,7 @@ namespace galio
 			for (auto&& ally : entitylist->get_ally_heroes())
 			{
 				if (ally->is_me()) continue;
-				if (ally->is_valid() && !ally->is_dead() && utils::enabled_in_map(combo::use_r_on, ally) && ally->get_health_percent() <= combo::ally_hp->get_int() && !utils::has_unkillable_buff(ally) && ally->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) >= 1 && ally->get_position().count_allys_in_range(r->range()) >= 1)
+				if (ally->is_valid() && !ally->is_dead() && utils::enabled_in_map(combo::use_r_on, ally) && ally->get_health_percent() <= combo::ally_hp->get_int() && !utils::has_unkillable_buff(ally) && myhero->get_position().count_enemies_in_range(combo::enemy_distance->get_int()) >= 1 && ally->get_position().count_allys_in_range(r->range()) >= 1)
 				{
 					auto pos = myhero->get_position() + vector(draw_settings::x_pos->get_int(), draw_settings::y_pos->get_int());
 					renderer->world_to_screen(pos, pos);
