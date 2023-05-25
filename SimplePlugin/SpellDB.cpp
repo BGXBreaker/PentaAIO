@@ -1,3 +1,7 @@
+// You are free to use this as you will, you can modify it freely!
+// It'd be appreciated if you left the credits in the menu functions though :)
+// Updates can be found at https://github.com/0x8L4H4J/BGXAddons
+// Feel free to join my Discord at https://discord.gg/czsJYCYSn8 as I'll be pinging the 'BGX Dev' role everytime the databases are updated!
 #include "SpellDB.h"
 
 namespace Database
@@ -614,7 +618,7 @@ namespace Database
     {
         if (!tab) // To prevent crashes in case of bad usage!
         {
-            console->print_error("[DEBUG] - Error Code: DB-IM1");
+            console->print_error("[BlahajDB] - Error Code: DB-IM1");
             return;
         }
 
@@ -805,7 +809,7 @@ namespace Database
     {
         if (!tab) // To prevent crashes in case of bad usage!
         {
-            console->print_error("[DEBUG] - Error Code: DB-IM2");
+            console->print_error("[BlahajDB] - Error Code: DB-IM2");
             return;
         }
 
@@ -891,6 +895,10 @@ namespace Database
             }
         }
 
+
+
+        tab->add_separator("databaseInfo", "- Database made by Omori! <3 -");
+        tab->add_separator("databaseVersion", "Version: " + DBVersion);
     }
 
     bool canOnAllyBuff(uint32_t buffHash)
