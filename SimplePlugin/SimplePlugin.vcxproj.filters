@@ -37,6 +37,9 @@
     <ClCompile Include="translate.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="anivia.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -64,6 +67,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="translate.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="anivia.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="..\plugin_sdk\clipper.cpp" />
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
+    <ClCompile Include="anivia.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="galio.cpp" />
     <ClCompile Include="permashow.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
+    <ClInclude Include="anivia.h" />
     <ClInclude Include="galio.h" />
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="singed.h" />
