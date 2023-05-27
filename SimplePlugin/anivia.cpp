@@ -329,7 +329,7 @@ namespace anivia
             Permashow::Instance.AddElement("W push", combo::w_push);
             Permashow::Instance.AddElement("W pull", combo::w_pull);
         }
-        main_tab->add_separator("separator_1", "~~Version: 1.0.0~~");
+        main_tab->add_separator("separator_1", "~~Version: 1.0.2~~");
         main_tab->add_separator("separator_2", "Author: GameBreaker#3051");
         main_tab->add_separator("separator_3", "~~Enjoy~~");
     }
