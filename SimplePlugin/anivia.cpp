@@ -144,7 +144,7 @@ namespace anivia
 
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            if (!enemy->is_dead() && enemy->is_visible() && enemy->is_targetable() && distance_between_positions(enemy->get_position(), position) < range)
+            if (!enemy->is_dead() && enemy->is_visible() && distance_between_positions(enemy->get_position(), position) < range)
             {
                 enemies_in_range.push_back(enemy);
             }
@@ -376,7 +376,7 @@ namespace anivia
         {
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (myhero->get_distance(enemy->get_position()) < 300.f)
+                if (myhero->get_distance(enemy->get_position()) < 300.f && !enemy->is_dead() && enemy->is_valid_target(q->range()))
                 {
                     if (q_missile == nullptr)
                     {
