@@ -366,11 +366,19 @@ namespace anivia
             last_r_pos = vector::zero;
             //myhero->print_chat(1, "no mana r");
         }
-        if (r->is_ready() && last_r_pos.is_valid() && last_r_pos.count_enemies_in_range(ult_range) == 0)
+        for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            r->cast();
-            last_r_pos = vector::zero;
-            //myhero->print_chat(1, "close r");
+            if (utils::has_unkillable_buff(enemy))
+            {
+                //myhero->print_chat(1, "utils::has_unkillable_buff(enemy)");
+                continue;
+            }
+            if (r->is_ready() && last_r_pos.is_valid() && last_r_pos.count_enemies_in_range(ult_range) == 0)
+            {
+                r->cast();
+                last_r_pos = vector::zero;
+                //myhero->print_chat(1, "close r");
+            }
         }
         if (q->is_ready() && combo::use_q->get_bool() && combo::close_q->get_bool())
         {
