@@ -329,7 +329,7 @@ namespace anivia
             Permashow::Instance.AddElement("W push", combo::w_push);
             Permashow::Instance.AddElement("W pull", combo::w_pull);
         }
-        main_tab->add_separator("separator_1", "~~Version: 1.0.2~~");
+        main_tab->add_separator("separator_1", "~~Version: 1.0.3~~");
         main_tab->add_separator("separator_2", "Author: GameBreaker#3051");
         main_tab->add_separator("separator_3", "~~Enjoy~~");
     }
@@ -368,7 +368,7 @@ namespace anivia
         }
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            if (utils::has_unkillable_buff(enemy))
+            if (utils::has_unkillable_buff(enemy) || enemy->get_buff(1036096934) || enemy->get_buff(-718911512))
             {
                 //myhero->print_chat(1, "utils::has_unkillable_buff(enemy)");
                 continue;
@@ -453,10 +453,12 @@ namespace anivia
         if (combo::w_pull->get_bool() && w->is_ready())
         {
             w_pull();
+            myhero->issue_order(hud->get_hud_input_logic()->get_game_cursor_position());
         }
         if (combo::w_push->get_bool() && w->is_ready())
         {
             w_push();
+            myhero->issue_order(hud->get_hud_input_logic()->get_game_cursor_position());
         }
         /*console->print("[PentaAIO] [DEBUG] Buff list:");
         for (auto& enemy : entitylist->get_enemy_heroes())
