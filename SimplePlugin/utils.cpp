@@ -20,8 +20,6 @@ namespace utils
 		std::string data = myhero->get_model();
 		std::transform(data.begin(), data.end(), data.begin(),
 			[](unsigned char c) { return std::tolower(c); });
-
-
 	}
 
 	bool has_unkillable_buff(game_object_script target)
@@ -38,6 +36,13 @@ namespace utils
 	bool has_untargetable_buff(game_object_script target)
 	{
 		return target->has_buff({ buff_hash("JaxCounterStrike"), buff_hash("ShenW") });
+	}
+	bool has_unslowable_buff(game_object_script target)
+	{
+		return target->has_buff({
+			buff_hash("Highlander"),
+			buff_hash("sejuanipassivecd"),
+			});
 	}
 
 	bool has_crowd_control_buff(game_object_script target)

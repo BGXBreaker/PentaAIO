@@ -70,6 +70,11 @@ namespace translate
 				{ translation_hash("0 = disable"), L"0 = 關閉" },
 				{ translation_hash("Spells to Cancel:"), L"要取消的技能:" },
 				{ translation_hash("Use WQ combo"), L"用WQ連招" },
+				{ translation_hash("Semi Manual"), L"半手動" },
+				{ translation_hash("when enemy is on your face"), L"當敵人在你臉上時" },
+				{ translation_hash("eg:YiQ , ZedR, etc"), L"劍聖Q,劫R等等" },
+				{ translation_hash("Don't close r if target have unkillable buff"), L"如果目標無敵時不要關r" },
+				{ translation_hash("eg:KayleR,TaricR,etc"), L"天使大,寶石大等等" }
 			}
 		);
 	}
