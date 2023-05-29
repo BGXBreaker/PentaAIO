@@ -143,27 +143,13 @@ namespace anivia
     {
         std::vector<game_object_script> enemies_in_range;
 
-        if (combo::unkillable->get_bool())
+        for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            for (auto&& enemy : entitylist->get_enemy_heroes())
+            if (!enemy->is_dead() && enemy->is_visible() && distance_between_positions(enemy->get_position(), position) < range)
             {
-                if (!enemy->is_dead() && enemy->is_visible() && !enemy->is_targetable() && distance_between_positions(enemy->get_position(), position) < range)
-                {
-                    enemies_in_range.push_back(enemy);
-                }
+                enemies_in_range.push_back(enemy);
             }
         }
-        else
-        {
-            for (auto&& enemy : entitylist->get_enemy_heroes())
-            {
-                if (!enemy->is_dead() && enemy->is_visible() && distance_between_positions(enemy->get_position(), position) < range)
-                {
-                    enemies_in_range.push_back(enemy);
-                }
-            }
-        }
-
         return enemies_in_range;
     }
     void load()
@@ -392,20 +378,16 @@ namespace anivia
         }
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            if (myhero->is_dead())
+            if (combo::unkillable->get_bool() && (utils::has_unkillable_buff(enemy) || enemy->get_buff(1036096934) || enemy->get_buff(-718911512)))
             {
-                continue;
-            }
-            if (utils::has_unkillable_buff(enemy) || enemy->get_buff(1036096934) || enemy->get_buff(-718911512))
-            {
-               // myhero->print_chat(1, "utils::has_unkillable_buff(enemy)");
+                //myhero->print_chat(1, "unkillable r");
                 continue;
             }
             else if (r->is_ready() && last_r_pos.is_valid() && last_r_pos.count_enemies_in_range(ult_range) == 0)
             {
                 r->cast();
                 last_r_pos = vector::zero;
-               // myhero->print_chat(1, "close r");
+                //myhero->print_chat(1, "close r");
             }
         }
         if (q->is_ready() && combo::use_q->get_bool() && combo::close_q->get_bool())
