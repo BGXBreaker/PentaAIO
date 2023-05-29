@@ -147,7 +147,7 @@ namespace anivia
         {
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (!enemy->is_dead() && enemy->is_visible() && distance_between_positions(enemy->get_position(), position) < range)
+                if (!enemy->is_dead() && enemy->is_visible() && !enemy->is_targetable() && distance_between_positions(enemy->get_position(), position) < range)
                 {
                     enemies_in_range.push_back(enemy);
                 }
@@ -157,7 +157,7 @@ namespace anivia
         {
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (!enemy->is_dead() && enemy->is_visible() && !enemy->is_targetable() && distance_between_positions(enemy->get_position(), position) < range)
+                if (!enemy->is_dead() && enemy->is_visible() && distance_between_positions(enemy->get_position(), position) < range)
                 {
                     enemies_in_range.push_back(enemy);
                 }
@@ -168,11 +168,13 @@ namespace anivia
     }
     void load()
     {
+        myhero->print_chat(0x3, "<font color=\"#FFFFFF\">[<b><font color=\"#3F704D\">Anivia | PentaAIO</font></b>]</font><font color=\"#3F704D\">:</font><font color=\"#90EE90\"> Loaded</font>");
+        myhero->print_chat(0x3, "<font color=\"#3F704D\"><b> Prediction: </b><font color=\"#90EE90\">only support Aurora</font></font>");
         translate::load();
         q = plugin_sdk->register_spell(spellslot::q, 1090);
         q->set_skillshot(0.25f, 55.0f, 950.0f, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
         w = plugin_sdk->register_spell(spellslot::w, 1000);
-        w->set_skillshot(0.25f, 255.0f, FLT_MAX, { }, skillshot_type::skillshot_circle);
+        w->set_skillshot(0.25f, 255.0f, FLT_MAX, { }, skillshot_type::skillshot_line);
         e = plugin_sdk->register_spell(spellslot::e, 650);
         e->set_skillshot(0.25f, 0.0f, 1600.0f, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
         r = plugin_sdk->register_spell(spellslot::r, 750);
