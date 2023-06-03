@@ -118,6 +118,7 @@ namespace anivia
     float calculate_q2_damage(game_object_script enemy);
     float calculate_e_damage(game_object_script enemy);
     float distance_between_positions(const vector& pos1, const vector& pos2);
+    int count_enemy_minions_in_range(float range, vector from);
     game_object_script q_missile;
     void q_logic();
     void q_auto_logic();
@@ -139,6 +140,7 @@ namespace anivia
     float ult_range = 400.0f;
     bool r_active();
     vector last_r_pos;
+    vector last_r_farm_pos;
     std::vector<game_object_script> get_enemies_in_range(vector position, float range)
     {
         std::vector<game_object_script> enemies_in_range;
@@ -568,47 +570,56 @@ namespace anivia
                                 if (q_missile->get_distance(minion) < 225.0f)
                                 {
                                     if (q->cast())
-                                        return;
+                                    {
+                                        //myhero->print_chat(1, "laneclear q recast");
+                                    }
                                 }
                             }
                         }
                     }
                     else if (q_missile == nullptr && !myhero->count_enemies_in_range(1300))
                     {
-                        if (q->cast_on_best_farm_position(1))
-                            return;
+                        if (q->cast_on_best_farm_position())
+                        {
+                            //myhero->print_chat(1, "laneclear q");
+                        }
                     }
                 }
-
                 if (e->is_ready() && laneclear::use_e->get_bool())
                 {
                     for (auto&& minion : lane_minions)
                     {
-                        if (minion->get_distance(myhero->get_position()) <= e->range() && laneclear::use_e->get_bool())
+                        if (minion->get_distance(myhero->get_position()) <= e->range())
                         {
-                            if (calculate_e_damage(minion) >= minion->get_health())
-                            {
-                                if (e->cast(minion))
-                                {
-                                   // myhero->print_chat(1, "E laneclear");
-                                    return;
-                                }
-                            }
+                            e->cast(minion);
                         }
                     }
                 }
-
                 if (r->is_ready() && laneclear::use_r->get_bool())
                 {
-                    if (utils::count_minions_in_range(myhero, r->range()) >= 1)
+                    auto r_position = r->get_cast_on_best_farm_position();
+                    auto minions_around = count_enemy_minions_in_range(ult_range, r_position);
+                    if (minions_around >= 1)
                     {
-                        if (r->toogle_state() == 1) r->cast(r->get_cast_on_best_farm_position(1));
+                        if (r->toogle_state() == 1)
+                        {
+                            r->cast(r_position);
+                            //myhero->print_chat(1, "laneclear farm r");
+                            last_r_farm_pos = r_position;
+                        }
                     }
-                    else if (r->toogle_state() == 2) r->cast();
+                    else
+                        if (minions_around == 0)
+                        {
+                            if (r->toogle_state() == 2)
+                            {
+                                r->cast();
+                                //myhero->print_chat(1, "laneclear farm r close");
+                            }
+                        }
                 }
             }
             else if (monsters.empty() && r->toogle_state() == 2) r->cast();
-
             if (!monsters.empty())
             {
                 if (q->is_ready() && jungleclear::use_q->get_bool())
@@ -629,38 +640,31 @@ namespace anivia
                     }
                     else if (q_missile == nullptr)
                     {
-                        if (q->cast_on_best_farm_position(1, true))
+                        if (q->cast_on_best_farm_position())
                             return;
                     }
                 }
-
                 if (e->is_ready() && jungleclear::use_e->get_bool())
                 {
                     if (e->cast(monsters.front()))
                         return;
                 }
-
                 if (r->is_ready() && jungleclear::use_r->get_bool())
                 {
                     if (utils::count_monsters_in_range(myhero, ult_range) >= 1)
                     {
                         if (r->toogle_state() == 1)
                         {
-                           // myhero->print_chat(1, "Enabling R");
+                            //myhero->print_chat(1, "Enabling R");
                             r->cast(r->get_cast_on_best_farm_position(1, true));
                         }
                     }
                     else if (r->toogle_state() == 2)
                     {
-                       // myhero->print_chat(1, "Disabling R");
+                        //myhero->print_chat(1, "Disabling R");
                         r->cast();
                     }
                 }
-            }
-            else if (lane_minions.empty() && r->toogle_state() == 2)
-            {
-               // myhero->print_chat(1, "Disabling R (2)");
-                r->cast();
             }
         }
         if (orbwalker->last_hit_mode() && laneclear::spell_farm->get_bool())
@@ -1285,5 +1289,15 @@ namespace anivia
         float dz = pos2.z - pos1.z;
 
         return std::sqrt(dx * dx + dy * dy + dz * dz);
+    }
+    int count_enemy_minions_in_range(float range, vector from)
+    {
+        int count = 0;
+        for (auto&& t : entitylist->get_enemy_minions())
+        {
+            if (t->is_valid_target(range, from))
+                count++;
+        }
+        return count;
     }
 }
