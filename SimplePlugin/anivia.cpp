@@ -736,7 +736,7 @@ namespace anivia
     {
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            if (enemy->has_buff(buff_hash("MorganaE")) || enemy->has_buff(buff_hash("OlafRagnarok")) || enemy->has_buff(buff_hash("SivirE")))
+            if (utils::has_unccable_buff(enemy))
             {
                // myhero->print_chat(1, "enemy have magic shield");
                 continue;
@@ -801,7 +801,6 @@ namespace anivia
                     auto buff = enemy->get_buff_by_type({ buff_type::Stun, buff_type::Snare, buff_type::Knockup, buff_type::Asleep, buff_type::Suppression, buff_type::Taunt });
                     auto zhonya = enemy->get_buff(1036096934);
                     auto ga = enemy->get_buff(-718911512);
-
                     if (buff != nullptr)
                     {
                         float remaining_time = buff->get_remaining_time();
@@ -824,7 +823,7 @@ namespace anivia
                                     {
                                         if (q->cast(enemy, utils::get_hitchance(hitchance::q_hitchance)))
                                         {
-                                           // myhero->print_chat(1, "q cc");
+                                            // myhero->print_chat(1, "q cc");
                                             return;
                                         }
                                     }
@@ -854,7 +853,7 @@ namespace anivia
                                     {
                                         if (q->cast(enemy, utils::get_hitchance(hitchance::q_hitchance)))
                                         {
-                                           // myhero->print_chat(1, "q zhonya");
+                                            // myhero->print_chat(1, "q zhonya");
                                             return;
                                         }
                                     }
@@ -884,7 +883,7 @@ namespace anivia
                                     {
                                         if (q->cast(enemy, utils::get_hitchance(hitchance::q_hitchance)))
                                         {
-                                           // myhero->print_chat(1, "q ga");
+                                            // myhero->print_chat(1, "q ga");
                                             return;
                                         }
                                     }
@@ -893,6 +892,7 @@ namespace anivia
                         }
                     }
                 }
+
             }
         }
     }
@@ -901,6 +901,13 @@ namespace anivia
 #pragma region auto_q
     void q_auto_logic()
     {
+        for (auto&& enemy : entitylist->get_enemy_heroes())
+        {
+            if (enemy->has_buff(buff_hash("MorganaE")) || enemy->has_buff(buff_hash("OlafRagnarok")) || enemy->has_buff(buff_hash("SivirE")) || enemy->has_buff(buff_hash("NocturneShroudofDarkness")))
+            {
+                continue;
+            }
+        }
         if (myhero->has_buff(buff_hash("FlashFrost")))
         {
             auto target = target_selector->get_target(q->range() + 675, damage_type::magical);

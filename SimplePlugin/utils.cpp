@@ -44,6 +44,16 @@ namespace utils
 			buff_hash("sejuanipassivecd"),
 			});
 	}
+	bool has_unccable_buff(game_object_script target)
+	{
+		return target->has_buff({
+			buff_hash("MorganaE"),
+			buff_hash("OlafRagnarok"),
+			buff_hash("SivirE"),
+			buff_hash("NocturneShroudofDarkness"),
+			buff_hash("FioraW")
+			});
+	}
 
 	bool has_crowd_control_buff(game_object_script target)
 	{
