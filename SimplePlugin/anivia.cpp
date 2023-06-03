@@ -341,7 +341,7 @@ namespace anivia
             Permashow::Instance.AddElement("W push", combo::w_push);
             Permashow::Instance.AddElement("W pull", combo::w_pull);
         }
-        main_tab->add_separator("separator_1", "~~Version: 1.0.4~~");
+        main_tab->add_separator("separator_1", "~~Version: 1.0.5~~");
         main_tab->add_separator("separator_2", "Author: GameBreaker#3051");
         main_tab->add_separator("separator_3", "~~Enjoy~~");
     }
@@ -420,12 +420,31 @@ namespace anivia
         if (q->is_ready() && !w->is_ready())
         {
             for (auto&& enemy : entitylist->get_enemy_heroes())
-
             {
                 if (Database::canCancel(enemy) && enemy->is_valid_target(q->range()) && !enemy->has_buff(buff_hash("SionR")))
                 {
-                    q->cast(enemy);
-                   // myhero->print_chat(1, "DataBase Q");
+                    if (myhero->has_buff(buff_hash("FlashFrost")))
+                    {
+                        if (q_missile != nullptr && q_missile->is_valid() && !q_missile->is_dead())
+                        {
+
+                            if (q_missile->get_distance(enemy) < 225.0f)
+                            {
+                                if (q->cast())
+                                {
+                                    //myhero->print_chat(1, "data base q recast");
+                                }
+                            }
+
+                        }
+                    }
+                    else if (q_missile == nullptr)
+                    {
+                        if (q->cast(enemy))
+                        {
+                            //myhero->print_chat(1, "database q");
+                        }
+                    }
                 }
             }
         }

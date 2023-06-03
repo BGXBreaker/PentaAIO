@@ -121,6 +121,7 @@ namespace singed
 
                 combo::use_e = combo->add_checkbox(myhero->get_model() + ".combo.w.use_e", "Use E", true);
                 combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+                combo::semi_e = combo->add_hotkey(myhero->get_model() + ".combo.semi_e", "Toggle Semi E", TreeHotkeyMode::Toggle, 0x06, true);
 
                 combo->add_separator("Combo R", " R Settings ");
 
@@ -203,6 +204,7 @@ namespace singed
         {
             Permashow::Instance.Init(main_tab);
             Permashow::Instance.AddElement("Spell Farm", laneclear::spell_farm);
+            Permashow::Instance.AddElement("Semi E", combo::semi_e);
         }
     }
     void unload()
@@ -427,6 +429,19 @@ namespace singed
                         }
                     }
                     else if (w->cast())
+                    {
+                        e->cast(enemy);
+                    }
+                }
+            }
+        }
+        if (combo::semi_e->get_bool())
+        {
+            for (auto& enemy : entitylist->get_enemy_heroes())
+            {
+                if (enemy->is_valid() && !enemy->is_dead())
+                {
+                    if (enemy->get_distance(myhero->get_position()) <= e->range())
                     {
                         e->cast(enemy);
                     }
