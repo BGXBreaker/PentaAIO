@@ -766,11 +766,13 @@ namespace anivia
             if (q_missile == nullptr)
             {
                 auto target = target_selector->get_target(q->range(), damage_type::magical);
+                auto pred = q->get_prediction(target);
+                auto pred_pos = pred.get_cast_position();
                 if (target != nullptr)
                 {
-                    if (q->cast(target, utils::get_hitchance(hitchance::q_hitchance)))
+                    if (q->cast(pred_pos))
                     {
-                       // myhero->print_chat(1, "q in nomal 1");
+                        //myhero->print_chat(1, "q in nomal 1");
                         return;
                     }
                 }
@@ -1215,19 +1217,20 @@ namespace anivia
     {
         if (draw_settings::draw_damage_settings::draw_damage->get_bool())
         {
+          
             for (auto& enemy : entitylist->get_enemy_heroes())
             {
                 if (enemy->is_valid() && !enemy->is_dead() && enemy->is_hpbar_recently_rendered())
                 {
                     float damage = 0.0f;
 
-                    if (q->is_ready() && e->is_ready() && draw_settings::draw_damage_settings::q_damage->get_bool() && draw_settings::draw_damage_settings::e_damage->get_bool())
+                    if ((q->is_ready() || q_missile != nullptr) && e->is_ready() && draw_settings::draw_damage_settings::q_damage->get_bool() && draw_settings::draw_damage_settings::e_damage->get_bool())
                     {
                         damage += calculate_q1_damage(enemy) + calculate_e_damage(enemy) + calculate_q2_damage(enemy);
                     }
                     else
                     {
-                        if (q->is_ready() && draw_settings::draw_damage_settings::q_damage->get_bool())
+                        if ((q->is_ready() || q_missile != nullptr) && draw_settings::draw_damage_settings::q_damage->get_bool())
                         {
                             damage += calculate_q1_damage(enemy) + calculate_q2_damage(enemy);
                         }
@@ -1236,7 +1239,7 @@ namespace anivia
                     if (e->is_ready() && draw_settings::draw_damage_settings::e_damage->get_bool())
                         damage += calculate_e_damage(enemy);
 
-                    if (r->is_ready() && e->is_ready() && draw_settings::draw_damage_settings::r_damage->get_bool() && draw_settings::draw_damage_settings::e_damage->get_bool())
+                    if (r->is_ready() && (e->is_ready() || enemy->has_buff(buff_hash("aniviachilled"))) && draw_settings::draw_damage_settings::r_damage->get_bool() && draw_settings::draw_damage_settings::e_damage->get_bool())
                         damage += (r->get_damage(enemy) + calculate_e_damage(enemy));
                     else
                     {
@@ -1245,7 +1248,6 @@ namespace anivia
                             damage += r->get_damage(enemy);
                         }
                     }
-
                     if (damage != 0.0f)
                         utils::draw_dmg_rl(enemy, damage, 0x8000ff00);
                 }
