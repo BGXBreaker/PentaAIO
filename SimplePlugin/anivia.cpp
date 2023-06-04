@@ -58,6 +58,8 @@ namespace anivia
         TreeEntry* wq = nullptr;
         TreeEntry* close_q = nullptr;
         TreeEntry* unkillable = nullptr;
+        TreeEntry* delay_r = nullptr;
+        TreeEntry* delay_int = nullptr;
     }
     namespace lasthit
     {
@@ -138,6 +140,8 @@ namespace anivia
     std::vector<float> frostbite_damages = { 100,150,200,250,300 };
     float frostbite_coef = 1.2f;
     float ult_range = 400.0f;
+    bool is_r_casted = false;
+    float r_cast_time = 0.0f;
     bool r_active();
     vector last_r_pos;
     vector last_r_farm_pos;
@@ -211,9 +215,13 @@ namespace anivia
                 combo::use_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
                 auto r_config = combo->add_tab(myhero->get_model() + "combo.r.config", "R Settings");
                 {
-                    combo::unkillable = r_config->add_checkbox(myhero->get_model() + ".buff", "Don't close r if target have unkillable buff", true);
+                    combo::unkillable = r_config->add_checkbox(myhero->get_model() + ".buff", "Don't close R if target have unkillable buff", true);
                     combo::unkillable->set_tooltip("eg:KayleR,TaricR,etc");
                     combo::unkillable->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+                    combo::delay_r = r_config->add_checkbox(myhero->get_model() + ".dealy", "Delay close R", false);
+                    combo::delay_int = r_config->add_slider("delayint", "Delay close R after X seconds", 2, 1, 10);
+                    combo::delay_int->set_tooltip("start when no enemy in ult range");
+                    combo::delay_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
                     combo::r_min_mana = r_config->add_slider("minmana", "Min. % Mana For Use R", 30, 0, 100);
                     combo::r_min_mana->set_tooltip("0 = disable");
                     combo::r_min_mana->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
@@ -341,7 +349,7 @@ namespace anivia
             Permashow::Instance.AddElement("W push", combo::w_push);
             Permashow::Instance.AddElement("W pull", combo::w_pull);
         }
-        main_tab->add_separator("separator_1", "~~Version: 1.0.5~~");
+        main_tab->add_separator("separator_1", "~~Version: 1.0.6~~");
         main_tab->add_separator("separator_2", "Author: GameBreaker#3051");
         main_tab->add_separator("separator_3", "~~Enjoy~~");
     }
@@ -376,8 +384,10 @@ namespace anivia
         {
             r->cast();
             last_r_pos = vector::zero;
-           // myhero->print_chat(1, "no mana r");
+            //myhero->print_chat(1, "no mana r");
         }
+        float current_time = gametime->get_time();
+
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
             if (combo::unkillable->get_bool() && (utils::has_unkillable_buff(enemy) || enemy->get_buff(1036096934) || enemy->get_buff(-718911512)))
@@ -387,11 +397,31 @@ namespace anivia
             }
             else if (r->is_ready() && last_r_pos.is_valid() && last_r_pos.count_enemies_in_range(ult_range) == 0)
             {
-                r->cast();
-                last_r_pos = vector::zero;
-                //myhero->print_chat(1, "close r");
+                if (combo::delay_r->get_bool())
+                {
+                    if (!is_r_casted)
+                    {
+                        r_cast_time = current_time;
+                        is_r_casted = true;
+                    }
+                    if (current_time - r_cast_time >= combo::delay_int->get_int())
+                    {
+                        r->cast();
+                        last_r_pos = vector::zero;
+                        //myhero->print_chat(1, "delay close r");
+                        is_r_casted = false;
+                        r_cast_time = 0.0f;
+                    }
+                }
+                else
+                {
+                    r->cast();
+                    last_r_pos = vector::zero;
+                    //myhero->print_chat(1, "close r");
+                }
             }
         }
+
         if (q->is_ready() && combo::use_q->get_bool() && combo::close_q->get_bool())
         {
             for (auto&& enemy : entitylist->get_enemy_heroes())
@@ -401,7 +431,7 @@ namespace anivia
                     if (q_missile == nullptr)
                     {
                         q->cast(enemy);
-                       // myhero->print_chat(1, "enemy too close !");
+                        //myhero->print_chat(1, "enemy too close !");
                     }
                 }
             }
@@ -413,7 +443,7 @@ namespace anivia
                 if (Database::canCancel(enemy) && enemy->is_valid_target(w->range()))
                 {
                     w->cast(enemy);
-                   // myhero->print_chat(1, "DataBase W");
+                    //myhero->print_chat(1, "DataBase W");
                 }
             }
         }
@@ -455,7 +485,7 @@ namespace anivia
                 if (q_missile != nullptr && q_missile->is_valid() && !q_missile->is_dead() && q_missile->get_distance(enemy) < 225.0f)
                 {
                     q->cast();
-                   // myhero->print_chat(1, "q2 update enemy");
+                    //myhero->print_chat(1, "q2 update enemy");
                 }
             }
         }
@@ -466,7 +496,7 @@ namespace anivia
                 if (q_missile != nullptr && q_missile->is_valid() && !q_missile->is_dead() && q_missile->get_distance(minion) < 225.0f)
                 {
                     q->cast();
-                  // myhero->print_chat(1, "q2 update minion");
+                  //myhero->print_chat(1, "q2 update minion");
                 }
             }
         }
@@ -477,7 +507,7 @@ namespace anivia
                 if (q_missile != nullptr && q_missile->is_valid() && !q_missile->is_dead() && q_missile->get_distance(monster) < 225.0f)
                 {
                     q->cast();
-                  // myhero->print_chat(1, "q2 update monster");
+                  //myhero->print_chat(1, "q2 update monster");
                 }
             }
         }*/
@@ -738,7 +768,7 @@ namespace anivia
         {
             if (utils::has_unccable_buff(enemy))
             {
-               // myhero->print_chat(1, "enemy have magic shield");
+                //myhero->print_chat(1, "enemy have magic shield");
                 continue;
             }
         }
@@ -754,7 +784,7 @@ namespace anivia
                     {
                         if (q->cast(target, utils::get_hitchance(hitchance::q_hitchance)))
                         {
-                           // myhero->print_chat(1, "q slow or unslowable target");
+                            //myhero->print_chat(1, "q slow or unslowable target");
                             return;
                         }
                     }
@@ -788,7 +818,7 @@ namespace anivia
                 {
                     if (q->cast(target, utils::get_hitchance(hitchance::q_hitchance)))
                     {
-                       // myhero->print_chat(1, "ks q1");
+                        //myhero->print_chat(1, "ks q1");
                         return;
                     }
                 }
@@ -825,7 +855,7 @@ namespace anivia
                                     {
                                         if (q->cast(enemy, utils::get_hitchance(hitchance::q_hitchance)))
                                         {
-                                            // myhero->print_chat(1, "q cc");
+                                            //myhero->print_chat(1, "q cc");
                                             return;
                                         }
                                     }
@@ -855,7 +885,7 @@ namespace anivia
                                     {
                                         if (q->cast(enemy, utils::get_hitchance(hitchance::q_hitchance)))
                                         {
-                                            // myhero->print_chat(1, "q zhonya");
+                                            //myhero->print_chat(1, "q zhonya");
                                             return;
                                         }
                                     }
@@ -885,7 +915,7 @@ namespace anivia
                                     {
                                         if (q->cast(enemy, utils::get_hitchance(hitchance::q_hitchance)))
                                         {
-                                            // myhero->print_chat(1, "q ga");
+                                            //myhero->print_chat(1, "q ga");
                                             return;
                                         }
                                     }
@@ -919,7 +949,7 @@ namespace anivia
                 {
                     if (q->cast())
                     {
-                       // myhero->print_chat(1, "auto q2");
+                        //myhero->print_chat(1, "auto q2");
                         return;
                     }
                 }
@@ -932,7 +962,7 @@ namespace anivia
             {
                 if (q->cast(target, utils::get_hitchance(hitchance::q_hitchance)))
                 {
-                   // myhero->print_chat(1, "auto q1");
+                    //myhero->print_chat(1, "auto q1");
                     return;
                 }
             }
@@ -958,7 +988,7 @@ namespace anivia
                         vector pos = myhero->get_position().extend(pred_pos, myhero->get_distance(pred_pos) + 50);
                         if (w->cast(pos))
                         {
-                           // myhero->print_chat(1, "w not facing block");
+                            //myhero->print_chat(1, "w not facing block");
                             return;
                         }
                     }
@@ -972,7 +1002,7 @@ namespace anivia
                         vector pos = myhero->get_position().extend(pred_pos, myhero->get_distance(pred_pos) - 50);
                         if (w->cast(pos))
                         {
-                           // myhero->print_chat(1, "w facing block");
+                            //myhero->print_chat(1, "w facing block");
                             return;
                         }
                     }
@@ -1000,7 +1030,7 @@ namespace anivia
                                     //vector pos = pred_pos.extend(myhero->get_position(), myhero->get_distance(pred_pos) + 200);
                                     if (w->cast(pos))
                                     {
-                                       // myhero->print_chat(1, "combo wq");
+                                        //myhero->print_chat(1, "combo wq");
                                         return;
                                     }
                                 }
@@ -1024,7 +1054,7 @@ namespace anivia
                 {
                     if (e->cast(target))
                     {
-                       // myhero->print_chat(1, "e on q");
+                        //myhero->print_chat(1, "e on q");
                         return;
                     }
                 }
@@ -1034,7 +1064,7 @@ namespace anivia
                     {
                         if (e->cast(target))
                         {
-                           // myhero->print_chat(1, "e on r");
+                            //myhero->print_chat(1, "e on r");
                             return;
                         }
                     }
@@ -1045,7 +1075,7 @@ namespace anivia
         {
             if (e->cast(target))
             {
-               // myhero->print_chat(1, "normal e");
+                //myhero->print_chat(1, "normal e");
                 return;
             }
         }
@@ -1076,7 +1106,7 @@ namespace anivia
                 {
                     r->cast(r_position);
                     last_r_pos = r_position;
-                   // myhero->print_chat(1, "open r");
+                    //myhero->print_chat(1, "open r");
                 }
             }
         }
@@ -1117,13 +1147,13 @@ namespace anivia
             if (sender->is_valid_target(q->range() + sender->get_bounding_radius()))
             {
                 q->cast(sender);
-               // myhero->print_chat(1, "anti gapcloser Q");
+                //myhero->print_chat(1, "anti gapcloser Q");
             }
             else (q_missile != nullptr && q_missile->is_valid() && !q_missile->is_dead() && q_missile->get_distance(sender) < 225.0f);
             {
                 if (q->cast())
                 {
-                   // myhero->print_chat(1, "anti gapcloser recast Q");
+                    //myhero->print_chat(1, "anti gapcloser recast Q");
                     return;
                 }
             }
@@ -1143,7 +1173,7 @@ namespace anivia
                     vector pos = myhero->get_position().extend(pred_pos, myhero->get_distance(pred_pos) - 50);
                     if (w->cast(pos))
                     {
-                       // myhero->print_chat(1, "w push");
+                        //myhero->print_chat(1, "w push");
                         return;
                     }
                 }
@@ -1164,7 +1194,7 @@ namespace anivia
                     vector pos = myhero->get_position().extend(pred_pos, myhero->get_distance(pred_pos) + 50);
                     if (w->cast(pos))
                     {
-                       // myhero->print_chat(1, "w pull");
+                        //myhero->print_chat(1, "w pull");
                         return;
                     }
                 }
@@ -1217,7 +1247,6 @@ namespace anivia
     {
         if (draw_settings::draw_damage_settings::draw_damage->get_bool())
         {
-          
             for (auto& enemy : entitylist->get_enemy_heroes())
             {
                 if (enemy->is_valid() && !enemy->is_dead() && enemy->is_hpbar_recently_rendered())

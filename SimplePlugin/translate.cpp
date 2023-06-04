@@ -74,7 +74,10 @@ namespace translate
 				{ translation_hash("when enemy is on your face"), L"當敵人在你臉上時" },
 				{ translation_hash("eg:YiQ , ZedR, etc"), L"劍聖Q,劫R等等" },
 				{ translation_hash("Don't close r if target have unkillable buff"), L"如果目標無敵時不要關r" },
-				{ translation_hash("eg:KayleR,TaricR,etc"), L"天使大,寶石大等等" }
+				{ translation_hash("eg:KayleR,TaricR,etc"), L"天使大,寶石大等等" },
+				{ translation_hash("Delay close R"), L"延遲關R" },
+				{ translation_hash("Delay close R after X seconds"), L"延遲X秒後才關R" },
+				{ translation_hash("start when no enemy in ult range"), L"當大招裡沒人時才開始計時" }
 			}
 		);
 	}
