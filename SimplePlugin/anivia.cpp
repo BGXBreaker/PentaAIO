@@ -644,74 +644,80 @@ namespace anivia
                         }
                     }
                 }
-                if (r->is_ready() && laneclear::use_r->get_bool())
+                for (auto&& minion : lane_minions)
                 {
-                    auto r_position = r->get_cast_on_best_farm_position();
-                    auto minions_around = count_enemy_minions_in_range(ult_range, r_position);
-                    if (minions_around >= 1)
+                    if (r->is_ready() && laneclear::use_r->get_bool() && minion->get_distance(myhero->get_position()) <= r->range())
                     {
-                        if (r->toogle_state() == 1)
+                        auto r_position = r->get_cast_on_best_farm_position();
+                        auto minions_around = count_enemy_minions_in_range(ult_range, r_position);
+                        if (minions_around >= 1)
                         {
-                            r->cast(r_position);
-                            //myhero->print_chat(1, "laneclear farm r");
-                            last_r_farm_pos = r_position;
-                        }
-                    }
-                    else
-                        if (minions_around == 0)
-                        {
-                            if (r->toogle_state() == 2)
+                            if (r->toogle_state() == 1)
                             {
-                                r->cast();
-                                //myhero->print_chat(1, "laneclear farm r close");
+                                r->cast(r_position);
+                                //myhero->print_chat(1, "laneclear farm r");
+                                last_r_farm_pos = r_position;
                             }
                         }
+                        else
+                            if (minions_around == 0)
+                            {
+                                if (r->toogle_state() == 2)
+                                {
+                                    r->cast();
+                                    //myhero->print_chat(1, "laneclear farm r close");
+                                }
+                            }
+                    }
                 }
             }
             else if (monsters.empty() && r->toogle_state() == 2) r->cast();
-            if (!monsters.empty())
+            for (auto&& monster : monsters)
             {
-                if (q->is_ready() && jungleclear::use_q->get_bool())
+                if (!monsters.empty())
                 {
-                    if (myhero->has_buff(buff_hash("FlashFrost")))
+                    if (q->is_ready() && jungleclear::use_q->get_bool())
                     {
-                        if (q_missile != nullptr && q_missile->is_valid() && !q_missile->is_dead())
+                        if (myhero->has_buff(buff_hash("FlashFrost")))
                         {
-                            for (auto& monster : monsters)
+                            if (q_missile != nullptr && q_missile->is_valid() && !q_missile->is_dead())
                             {
-                                if (q_missile->get_distance(monster) < 225.0f)
+                                for (auto& monster : monsters)
                                 {
-                                    if (q->cast())
-                                        return;
+                                    if (q_missile->get_distance(monster) < 225.0f)
+                                    {
+                                        if (q->cast())
+                                            return;
+                                    }
                                 }
                             }
                         }
-                    }
-                    else if (q_missile == nullptr)
-                    {
-                        if (q->cast_on_best_farm_position())
-                            return;
-                    }
-                }
-                if (e->is_ready() && jungleclear::use_e->get_bool())
-                {
-                    if (e->cast(monsters.front()))
-                        return;
-                }
-                if (r->is_ready() && jungleclear::use_r->get_bool())
-                {
-                    if (utils::count_monsters_in_range(myhero, ult_range) >= 1)
-                    {
-                        if (r->toogle_state() == 1)
+                        else if (q_missile == nullptr)
                         {
-                            //myhero->print_chat(1, "Enabling R");
-                            r->cast(r->get_cast_on_best_farm_position(1, true));
+                            if (q->cast_on_best_farm_position())
+                                return;
                         }
                     }
-                    else if (r->toogle_state() == 2)
+                    if (e->is_ready() && jungleclear::use_e->get_bool() && monster->get_distance(myhero->get_position()) <= e->range())
                     {
-                        //myhero->print_chat(1, "Disabling R");
-                        r->cast();
+                        if (e->cast(monsters.front()))
+                            return;
+                    }
+                    if (r->is_ready() && jungleclear::use_r->get_bool() && monster->get_distance(myhero->get_position()) <= r->range())
+                    {
+                        if (utils::count_monsters_in_range(myhero, ult_range) >= 1)
+                        {
+                            if (r->toogle_state() == 1)
+                            {
+                                //myhero->print_chat(1, "Enabling R");
+                                r->cast(r->get_cast_on_best_farm_position());
+                            }
+                        }
+                        else if (r->toogle_state() == 2)
+                        {
+                            //myhero->print_chat(1, "Disabling R");
+                            r->cast();
+                        }
                     }
                 }
             }
@@ -742,7 +748,7 @@ namespace anivia
 
                             for (auto& minion : lane_minions)
                             {
-                                if (calculate_e_damage(minion) > minion->get_health())
+                                if (myhero->get_auto_attack_damage(minion) > minion->get_health())
                                 {
                                     killable_minions++;
                                 }
