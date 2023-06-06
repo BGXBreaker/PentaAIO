@@ -124,9 +124,11 @@ namespace anivia
     int count_enemy_monsters_in_range(float range, vector from);
     game_object_script q_missile;
     void q_logic();
+    void harass_q();
     void q_auto_logic();
     void w_logic();
     void e_logic();
+    void harass_e();
     void r_logic();
     void w_pull();
     void w_push();
@@ -243,6 +245,8 @@ namespace anivia
                 harass::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
                 harass::use_e = harass->add_checkbox(myhero->get_model() + ".harass.e", "Use E", false);
                 harass::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
+                harass::e_frosted = harass->add_checkbox(myhero->get_model() + ".harass.e.drosted", "Only E on frosted", true);
+                harass::e_frosted->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
             }
             auto lasthit = main_tab->add_tab(myhero->get_model() + ".lasthit", "Lasthit Settings");
             {
@@ -350,7 +354,7 @@ namespace anivia
             Permashow::Instance.AddElement("W push", combo::w_push);
             Permashow::Instance.AddElement("W pull", combo::w_pull);
         }
-        main_tab->add_separator("separator_1", "~~Version: 1.0.6~~");
+        main_tab->add_separator("separator_1", "~~Version: 1.0.7~~");
         main_tab->add_separator("separator_2", "Author: GameBreaker#3051");
         main_tab->add_separator("separator_3", "~~Enjoy~~");
     }
@@ -387,38 +391,45 @@ namespace anivia
             last_r_pos = vector::zero;
             //myhero->print_chat(1, "no mana r");
         }
-        float current_time = gametime->get_time();
-
-        for (auto&& enemy : entitylist->get_enemy_heroes())
+        if (r_active())
         {
-            if (combo::unkillable->get_bool() && (utils::has_unkillable_buff(enemy) || enemy->get_buff(1036096934) || enemy->get_buff(-718911512)))
+            if (myhero->is_dead() || myhero->is_recalling())
             {
-                //myhero->print_chat(1, "unkillable r");
-                continue;
+                last_r_pos = vector::zero;
+                return;
             }
-            else if (r->is_ready() && last_r_pos.is_valid() && last_r_pos.count_enemies_in_range(ult_range) == 0)
+            float current_time = gametime->get_time();
+            for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (combo::delay_r->get_bool())
+                if (combo::unkillable->get_bool() && (utils::has_unkillable_buff(enemy) || enemy->get_buff(1036096934) || enemy->get_buff(-718911512)))
                 {
-                    if (!is_r_casted)
+                    //myhero->print_chat(1, "unkillable r");
+                    continue;
+                }
+                if (r->is_ready() && last_r_pos.is_valid() && last_r_pos.count_enemies_in_range(ult_range) == 0)
+                {
+                    if (combo::delay_r->get_bool())
                     {
-                        r_cast_time = current_time;
-                        is_r_casted = true;
+                        if (!is_r_casted)
+                        {
+                            r_cast_time = current_time;
+                            is_r_casted = true;
+                        }
+                        if (current_time - r_cast_time >= combo::delay_int->get_int())
+                        {
+                            r->cast();
+                            last_r_pos = vector::zero;
+                            //myhero->print_chat(1, "delay close r");
+                            is_r_casted = false;
+                            r_cast_time = 0.0f;
+                        }
                     }
-                    if (current_time - r_cast_time >= combo::delay_int->get_int())
+                    else
                     {
                         r->cast();
                         last_r_pos = vector::zero;
-                        //myhero->print_chat(1, "delay close r");
-                        is_r_casted = false;
-                        r_cast_time = 0.0f;
+                        //myhero->print_chat(1, "close r");
                     }
-                }
-                else
-                {
-                    r->cast();
-                    last_r_pos = vector::zero;
-                    //myhero->print_chat(1, "close r");
                 }
             }
         }
@@ -560,11 +571,11 @@ namespace anivia
             {
                 if (q->is_ready() && harass::use_q->get_bool())
                 {
-                    q_logic();
+                    harass_q();
                 }
                 if (e->is_ready() && harass::use_e->get_bool())
                 {
-                    e_logic();
+                    harass_e();
                 }
             }
         }
@@ -791,7 +802,7 @@ namespace anivia
                 continue;
             }
         }
-        if (q->is_ready() && combo::r_slow_q->get_bool() && myhero->get_level() >= 6)
+        if ((q->is_ready() && combo::r_slow_q->get_bool() && myhero->get_level() >= 6))
         {
             auto target = target_selector->get_target(r->range(), damage_type::magical);
             if (target != nullptr && (target->has_buff(buff_hash("aniviachilled")) || utils::has_unslowable_buff(target)))
@@ -1090,7 +1101,7 @@ namespace anivia
                 }
             }
         }
-        else  if (target != nullptr)
+        else if (target != nullptr)
         {
             if (e->cast(target))
             {
@@ -1109,6 +1120,7 @@ namespace anivia
                 }
             }
         }
+
     }
 #pragma endregion
 
@@ -1126,6 +1138,65 @@ namespace anivia
                     r->cast(r_position);
                     last_r_pos = r_position;
                     //myhero->print_chat(1, "open r");
+                }
+            }
+        }
+    }
+
+#pragma region harass_q
+    void harass_q()
+    {
+        for (auto&& enemy : entitylist->get_enemy_heroes())
+        {
+            if (utils::has_unccable_buff(enemy))
+            {
+                //myhero->print_chat(1, "enemy have magic shield");
+                continue;
+            }
+        }
+        if (q->is_ready())
+        {
+            if (q_missile == nullptr)
+            {
+                auto target = target_selector->get_target(q->range(), damage_type::magical);
+                if (target != nullptr)
+                {
+                    if (q->cast(target, utils::get_hitchance(hitchance::q_hitchance)))
+                    {
+                        //myhero->print_chat(1, "harass q1");
+                        return;
+                    }
+                }
+            }
+        }
+    }
+#pragma region harass_e
+    void harass_e()
+    {
+        if (harass::e_frosted->get_bool())
+        {
+            auto target = target_selector->get_target(e->range(), damage_type::magical);
+            if (target != nullptr)
+            {
+                if (target->has_buff(buff_hash("aniviaiced")) || target->has_buff(buff_hash("aniviachilled")))
+                {
+                    if (e->cast(target))
+                    {
+                        //myhero->print_chat(1, "harass on frosted");
+                        return;
+                    }
+                }
+            }
+        }
+        else if (harass::use_e->get_bool())
+        {
+            auto target = target_selector->get_target(e->range(), damage_type::magical);
+            if (target != nullptr)
+            {
+                if (e->cast(target))
+                {
+                    //myhero->print_chat(1, "harass on e");
+                    return;
                 }
             }
         }
