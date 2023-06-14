@@ -276,32 +276,36 @@ namespace utils
 
 	void draw_dmg_rl(game_object_script target, float damage, unsigned long color)
 	{
-		if (target != nullptr && target->is_valid() && target->is_visible_on_screen() && target->is_hpbar_recently_rendered())
+		if (target == nullptr || !target->is_valid() || !target->is_hpbar_recently_rendered()) return;
+
+		auto bar_pos = target->get_hpbar_pos();
+
+		if (bar_pos.is_valid() && !target->is_dead() && target->is_visible())
 		{
-			auto bar_pos = target->get_hpbar_pos();
+			auto x_offset = 0.f;
+			auto y_offset = -10.2f;
+			auto width = 105;
+			auto height = 11;
 
-			if (bar_pos.is_valid() && !target->is_dead() && target->is_visible())
+			if (renderer->screen_height() > 1400)
 			{
-				const auto health = target->get_health();
-
-				bar_pos = vector(bar_pos.x + (105 * (health / target->get_max_health())), bar_pos.y -= 10);
-
-				auto damage_size = (105 * (damage / target->get_max_health()));
-
-				if (damage >= health)
-				{
-					damage_size = (105 * (health / target->get_max_health()));
-				}
-
-				if (damage_size > 105)
-				{
-					damage_size = 105;
-				}
-
-				const auto size = vector(bar_pos.x + (damage_size * -1), bar_pos.y + 11);
-
-				draw_manager->add_filled_rect(bar_pos, size, color);
+				x_offset = 10;
+				y_offset = -5;
+				width = 125;
+				height = 13;
 			}
+
+			const auto health = target->get_health();
+			auto damage_size = (width * (damage / target->get_max_health()));
+			bar_pos = vector(bar_pos.x + x_offset + (width * (health / target->get_max_health())), bar_pos.y + y_offset);
+
+			if (damage >= health) damage_size = (width * (health / target->get_max_health()));
+
+			if (damage_size > width) damage_size = width;
+
+			const auto size = vector(bar_pos.x + x_offset + (damage_size * -1), bar_pos.y + height);
+
+			draw_manager->add_filled_rect(bar_pos, size, color);
 		}
 	}
 
