@@ -167,7 +167,7 @@ namespace anivia
         myhero->print_chat(0x3, "<font color=\"#3F704D\"><b> Prediction: </b><font color=\"#90EE90\">only support Aurora</font></font>");
         translate::load();
         q = plugin_sdk->register_spell(spellslot::q, 1090);
-        q->set_skillshot(0.25f, 55.0f, 950.0f, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+        q->set_skillshot(0.25f, 110.0f, 950.0f, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
         w = plugin_sdk->register_spell(spellslot::w, 1000);
         w->set_skillshot(0.25f, 255.0f, FLT_MAX, { }, skillshot_type::skillshot_line);
         e = plugin_sdk->register_spell(spellslot::e, 650);
