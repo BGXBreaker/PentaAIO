@@ -779,7 +779,7 @@ namespace anivia
                                     killable_minions++;
                                 }
 
-                                if (killable_minions >= 2)
+                                if (killable_minions >= 2 && !orbwalker->can_attack())
                                 {
                                     if (e->cast(minion))
                                     {
@@ -790,6 +790,7 @@ namespace anivia
                         }
                     }
                 }
+            }
             }
         }
     }
@@ -2830,7 +2831,7 @@ namespace anivia
                         }
                     }
                     if (damage != 0.0f)
-                        utils::draw_dmg_rl(enemy, damage, 0x8000ff00);
+                        utils::draw_dmg_rl(enemy, damage, draw_settings::draw_transparency->get_color());
                 }
             }
         }

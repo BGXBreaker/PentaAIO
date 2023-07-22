@@ -88,6 +88,7 @@ namespace galio
 	float calculate_q_damage(game_object_script enemy);
 	float calculate_q_wind_damage(game_object_script enemy);
 	float calculate_e_damage(game_object_script enemy);
+	float dmg_can_do();
 
 	std::vector<float> q_damages = { 70,105,140,175,210 };
 	float q_coef = 0.75;
@@ -417,36 +418,23 @@ namespace galio
 
 		if (target != nullptr)
 		{
-			if (q->is_ready())
+			if (dmg_can_do() > target->get_real_health())
 			{
-				if ((calculate_q_damage(target) + calculate_q_wind_damage(target) + calculate_e_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health()))
+				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
 				{
-					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
+					auto pos = e->get_prediction(target).get_cast_position();
+					if (!evade->is_dangerous(pos))
+					{
+						e->cast(pos);
+						//myhero->print_chat(1, "killable e pos");
+					}
+					else
 					{
 						e->cast(target);
-						//myhero->print_chat(1, "killable e1");
+						//myhero->print_chat(1, "killable e2");
 					}
 				}
-			}
-			else
-			{
-				if (calculate_e_damage(target) + myhero->get_auto_attack_damage(target) > target->get_health())
-				{
-					if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
-					{
-						auto pos = e->get_prediction(target).get_cast_position();
-						if (!evade->is_dangerous(pos))
-						{
-							e->cast(pos);
-							//myhero->print_chat(1, "killable e pos");
-						}
-						else
-						{
-							e->cast(target);
-							//myhero->print_chat(1, "killable e2");
-						}
-					}
-				}
+
 			}
 
 			if (myhero->get_distance(target) > myhero->get_attack_range())
@@ -582,14 +570,33 @@ namespace galio
 						damage += myhero->get_auto_attack_damage(enemy);
 
 					if (damage != 0.0f)
-						utils::draw_dmg_rl(enemy, damage, 0x8000ff00);
+						utils::draw_dmg_rl(enemy, damage, draw_settings::draw_transparency->get_color());
 				}
 			}
 		}
 		if (r->is_ready() && draw_settings::rMinimapRange->get_bool())
 			draw_manager->draw_circle_on_minimap(myhero->get_position(), r->range(), draw_settings::r_color->get_color());
 	}
-
+	float dmg_can_do()
+	{
+		float total_dmg = 0.0f;
+		for (auto& enemy : entitylist->get_enemy_heroes())
+		{
+			if (q->is_ready())
+			{
+				total_dmg += (calculate_q_damage(enemy) + calculate_q_wind_damage(enemy));
+			}
+			if (e->is_ready())
+			{
+				total_dmg += (calculate_e_damage(enemy));
+			}
+			if (orbwalker->can_attack())
+			{
+				total_dmg += myhero->get_auto_attack_damage(enemy);
+			}
+		}
+		return total_dmg;
+	}
 	void on_draw()
 	{
 
