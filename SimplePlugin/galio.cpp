@@ -76,6 +76,7 @@ namespace galio
 	namespace hitchance
 	{
 		TreeEntry* q_hitchance = nullptr;
+		TreeEntry* e_hitchance = nullptr;
 	}
 
 
@@ -193,6 +194,7 @@ namespace galio
 			auto hitchance = main_tab->add_tab(myhero->get_model() + ".hitchance", "Hitchance Settings");
 			{
 				hitchance::q_hitchance = hitchance->add_combobox(myhero->get_model() + ".hitchance.q", "Hitchance Q", { {"Low",nullptr},{"Medium",nullptr },{"High", nullptr},{"Very High",nullptr} }, 2);
+				hitchance::e_hitchance = hitchance->add_combobox(myhero->get_model() + ".hitchance.e", "Hitchance E", { {"Low",nullptr},{"Medium",nullptr },{"High", nullptr},{"Very High",nullptr} }, 2);
 			}
 			auto draw_settings = main_tab->add_tab(myhero->get_model() + ".drawings", "Drawings Settings");
 			{
@@ -430,7 +432,7 @@ namespace galio
 					}
 					else
 					{
-						e->cast(target);
+						e->cast(target, utils::get_hitchance(hitchance::e_hitchance));
 						//myhero->print_chat(1, "killable e2");
 					}
 				}
@@ -443,7 +445,7 @@ namespace galio
 				{
 					if (e->is_ready() && combo::use_e->get_bool() && combo::e_mode->get_int() == 0 && w->is_ready() && combo::use_w->get_bool())
 					{
-						e->cast(target);
+						e->cast(target, utils::get_hitchance(hitchance::e_hitchance));
 						//myhero->print_chat(1, "EW");
 					}
 				}
@@ -452,7 +454,7 @@ namespace galio
 			{
 				if (!myhero->is_under_enemy_turret() || combo::allow_tower_dive->get_bool())
 				{
-					e->cast(target);
+					e->cast(target, utils::get_hitchance(hitchance::e_hitchance));
 					//myhero->print_chat(1, "combo E");
 				}
 			}
@@ -462,7 +464,7 @@ namespace galio
 				{
 					if (target->has_buff(buff_hash("GalioWslow")))
 					{
-						(e->cast(target));
+						e->cast(target, utils::get_hitchance(hitchance::e_hitchance));
 						//myhero->print_chat(1, "WE");
 					}
 
